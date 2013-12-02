@@ -1,5 +1,6 @@
 /**
  * @file IOPin.h
+ * @package IndeMic
  * @author Kirill Yatsenko <kirill.yatsenko@hedrok.org>
  *
  * @section LICENSE
@@ -18,6 +19,9 @@
 #pragma once
 
 #include <micro_types.h>
+
+namespace IndeMic
+{
 
 /**
  * One Input/Output Pin class
@@ -80,3 +84,5 @@ class IOPin
         /** Port of controlled pin */
         port_t _port;
 };
+
+}

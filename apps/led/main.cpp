@@ -1,6 +1,5 @@
 /**
- * @file micro_types.h
- * @package IndeMic
+ * @file main.cpp
  * @author Kirill Yatsenko <kirill.yatsenko@hedrok.org>
  *
  * @section LICENSE
@@ -17,17 +16,28 @@
  * http://www.gnu.org/copyleft/gpl.html
  *
  * @section DESCRIPTION
- * This file contains basic types typedefs for AVR architecture
+ *
+ * main file of LED test using multi-platform library IndeMic
  */
-#pragma once
 
-#include <inttypes.h>
+#include <IOPin.h>
 
-/** Represents type of PORT */
-typedef volatile uint8_t& port_t;
+#include "Board.h"
 
-/** Represents type of pin index */
-typedef uint8_t pin_ind_t;
+int main()
+{
+    Led::Board board;
+    Led::initBoard(board);
+    IndeMic::IOPin *pin = board.led;
 
-/** Represents type of logic entry - high or low */
-typedef uint8_t logic_t;
+    pin->makeOutput();
+    while (true)
+    {
+        pin->setHigh();
+        for (uint32_t t = 0; t < 16L * 1024 * 1024; t++) {
+        }
+        pin->setLow();
+        for (uint32_t t = 0; t < 16L* 1024 * 1024; t++) {
+        }
+    }
+}
