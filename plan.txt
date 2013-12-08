@@ -5,12 +5,12 @@ IV CNC machine stage 2
 V 3D-printer
 
 I
-    1. Stepper boards
+    +1. Stepper boards
         +1.1 pcb
-        1.2 manufacture
-    2. Switch board
-        2.1 pcb
-        2.2 manufacture
+        +1.2 manufacture
+    +2. Switch board
+        +2.1 pcb
+        +2.2 manufacture
     3. Firmware for AVR board - drilling, manual control
     4. Hardware - make motor mounts MUCH better
     5. Upload of drill files, script for converting .drl files to

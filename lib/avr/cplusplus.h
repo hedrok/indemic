@@ -1,5 +1,5 @@
 /**
- * @file micro_types.h
+ * @file cplusplus.h
  * @package IndeMic
  * @author Kirill Yatsenko <kirill.yatsenko@hedrok.org>
  *
@@ -17,20 +17,20 @@
  * http://www.gnu.org/copyleft/gpl.html
  *
  * @section DESCRIPTION
- * This file contains basic types typedefs for AVR architecture
+ *
+ * functions for normal C++ work
  */
 #pragma once
 
-#include <inttypes.h>
+#include <stdlib.h>
 
-/** Represents type of pin index */
-typedef uint8_t pin_ind_t;
+void * operator new(size_t size);
+void operator delete(void * ptr);
 
-/** Represents type of PORT */
-typedef volatile uint8_t& port_t;
+__extension__ typedef int __guard __attribute__((mode (__DI__)));
 
-/** Represents type of port mask */
-typedef uint8_t port_mask_t;
+extern "C" int __cxa_guard_acquire(__guard *);
+extern "C" void __cxa_guard_release(__guard *);
+extern "C" void __cxa_guard_abort(__guard *);
 
-/** Represents type of logic entry - high or low */
-typedef uint8_t logic_t;
+extern "C" void __cxa_pure_virtual(void);
