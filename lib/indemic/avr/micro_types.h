@@ -1,5 +1,5 @@
 /**
- * @file AVRBoard.cpp
+ * @file micro_types.h
  * @package IndeMic
  * @author Kirill Yatsenko <kirill.yatsenko@hedrok.org>
  *
@@ -15,24 +15,29 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details at
  * http://www.gnu.org/copyleft/gpl.html
+ *
+ * @section DESCRIPTION
+ * This file contains basic types typedefs for AVR architecture
  */
+#pragma once
 
+#include <inttypes.h>
 
-#include <indemic/avr/IOPin.h>
-#include <indemic/avr/products.h>
-
-#include <avr/io.h>
-
-#include "../HelloLed.h"
-
-namespace Led
+namespace IndeMic
 {
-
-    class RedLed : public IndeMic::avr::IOPin<IndeMic::avr::AT90USB162Mic, void, void> {};
-    class YellowLed : public IndeMic::avr::IOPin<IndeMic::avr::AT90USB162Mic, void, void> {};
-};
-
-int main()
+namespace avr
 {
-    HelloLed<Led::RedLed, Led::YellowLed>::main();
+    /** Represents type of pin index */
+    typedef uint8_t pin_ind_t;
+
+    /** Represents type of PORT */
+    typedef volatile uint8_t& port_t;
+
+    /** Represents type of port mask */
+    typedef uint8_t port_mask_t;
+
+    /** Represents type of logic entry - high or low */
+    typedef uint8_t logic_t;
+
+}
 }

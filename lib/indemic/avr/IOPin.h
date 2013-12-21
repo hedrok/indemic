@@ -18,7 +18,7 @@
  */
 #pragma once
 
-#include <micro_types.h>
+#include <indemic/avr/micro_types.h>
 
 namespace IndeMic
 {

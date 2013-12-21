@@ -1,5 +1,5 @@
 /**
- * @file micro_types.h
+ * @file microcontrollers.h
  * @package IndeMic
  * @author Kirill Yatsenko <kirill.yatsenko@hedrok.org>
  *
@@ -17,20 +17,17 @@
  * http://www.gnu.org/copyleft/gpl.html
  *
  * @section DESCRIPTION
- * This file contains basic types typedefs for AVR architecture
+ * This file contains class tags for AVR products
  */
 #pragma once
 
-#include <inttypes.h>
+namespace IndeMic
+{
+namespace avr
+{
+    /** Generic AVR microcontroller */
+    class AVRMic {};
 
-/** Represents type of pin index */
-typedef uint8_t pin_ind_t;
-
-/** Represents type of PORT */
-typedef volatile uint8_t& port_t;
-
-/** Represents type of port mask */
-typedef uint8_t port_mask_t;
-
-/** Represents type of logic entry - high or low */
-typedef uint8_t logic_t;
+    class AT90USB162Mic : public AVRMic {};
+}
+}
