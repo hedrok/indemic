@@ -1,5 +1,5 @@
 /**
- * @file microcontrollers.h
+ * @file Port.h
  * @package IndeMic
  * @author Kirill Yatsenko <kirill.yatsenko@hedrok.org>
  *
@@ -15,27 +15,24 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details at
  * http://www.gnu.org/copyleft/gpl.html
- *
- * @section DESCRIPTION
- * This file contains class tags for AVR products
  */
 #pragma once
 
-#include <indemic/avr/Port.h>
+#include <indemic/avr/micro_types.h>
 
 namespace IndeMic
 {
 namespace avr
 {
-    /** Generic AVR microcontroller */
-    class AVRMic {};
 
-    class AT90USB162Mic : public AVRMic
-    {
-        public:
-            typedef Port<0x23> PortB;
-            typedef Port<0x26> PortC;
-            typedef Port<0x29> PortD;
-    };
+/**
+ * One port of AVR implementation
+ */
+template<int base_address>
+class Port
+{
+    //TODO: accessing PORTn, DDRn, PINn
+};
+
 }
 }

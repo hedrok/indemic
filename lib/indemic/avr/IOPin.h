@@ -29,7 +29,7 @@ namespace avr
  * One Input/Output Pin class
  * AVR implementation
  */
-template<typename Microcontroller, typename Port, typename Pin>
+template<typename Microcontroller, typename Port, int pin_number>
 class IOPin
 {
     public:
