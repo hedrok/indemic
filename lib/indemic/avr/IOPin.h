@@ -63,7 +63,7 @@ class IOPin
          */
         static void setHigh()
         {
-            Port::portRegister() |= (1 << pin_number);
+            Port::portRegister() |= pin_mask;
         }
 
         /**
@@ -73,6 +73,7 @@ class IOPin
          */
         static void setLow()
         {
+            Port::portRegister() &= ~pin_mask;
         }
 
         /**
@@ -82,7 +83,14 @@ class IOPin
          */
         static void setValue(logic_t value)
         {
+            if (value) {
+                setHigh();
+            } else {
+                setLow();
+            }
         }
+    private:
+        enum { pin_mask = 1 << pin_number};
 };
 
 }

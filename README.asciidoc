@@ -10,45 +10,50 @@ IndeMic project goals
 . There should be no extra code generated when using IndeMic library
   comparing to writing in plain C (when compiled with -Os flag)
 
-= Status
+== Status
 
 Everything in this document is only plans currently. But I'm working on
 it :)
 
-= Introduction
+== Introduction
 
 IndeMic is template library with heavy usage of templates and C++ 11 features.
 This is the only way I know to achieve project goals without
 code size overhead. Following sections will tell in tutorial-like manner how to
 use the library.
 
-= Abstract interface for microcontroller hardware
+== Abstract interface for microcontroller hardware
 
 The simplest example is IOPin template class.
 
 Library definition:
- $ template<typename Microcontroller, typename Port, typename Pin>
+
+ $ template<typename Microcontroller, typename Port, int pin>
  $ class IOPin
  $ {
  $    public:
- $       static inline void set()
+ $       static inline void setHigh()
  $       {
- $          Port::port |= pin::mask;
+ $          Port::portRegister() |= 1 << pin;
  $       }
  $ };
 
 Usage in board file:
- $ class RedLed : public IOPin<AT90USB162, AVRPort<PortB_base>, AVRPin<3> > {};
- $ class GreenLed : public IOPin<AT90USB162, AVRPort<PortD_base>, AVRPin<4> > {};
+
+ $ typedef AT90USB162 M;
+ $ class RedLed : public IOPin<M, M::PortB, 3> {};
+ $ class GreenLed : public IOPin<M, M::PortD, 4> {};
 
 Usage in application:
- $ RedLed::set();
+
+ $ RedLed::setHigh();
+ $ GreenLed::setHigh();
 
 This way application knows nothing about microcontroller it uses,
 but no extra code is generated because of usage of templates and
 -Os optimization.
 
-= Easy to add new microcontroller families/products
+== Easy to add new microcontroller families/products
 
 I am working with two families of microcontroller: AVR and STM32.
 New family can be implemented by copying nearest. Families cannot
@@ -59,7 +64,7 @@ Then any class that should be changed can be specialized for this
 microcontroller, or it will use default implementation for family
 by templates magic.
 
-= Interrupts
+== Interrupts
 
 I'm planning to implement interrupts handling by modification of linker
 scripts: instead of +vectors+ section I'll create separate section
