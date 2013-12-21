@@ -26,12 +26,33 @@ namespace avr
 {
 
 /**
- * One port of AVR implementation
+ * Incapsulates AVR port
  */
 template<int base_address>
 class Port
 {
-    //TODO: accessing PORTn, DDRn, PINn
+public:
+    /**
+     * @return PORTn of port
+     */
+    static inline register_t portRegister()
+    {
+        return static_cast<register_t>(*reinterpret_cast<uint8_t*>(base_address + 0x2));
+    }
+    /**
+     * @return DDRn of port
+     */
+    static inline register_t ddRegister()
+    {
+        return static_cast<register_t>(base_address + 0x1);
+    }
+    /**
+     * @return PINn of port
+     */
+    static inline register_t pinRegister()
+    {
+        return static_cast<register_t>(base_address + 0x0);
+    }
 };
 
 }

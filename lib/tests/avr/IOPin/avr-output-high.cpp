@@ -9,11 +9,10 @@ using namespace IndeMic::avr;
 
 typedef AT90USB162Mic M;
 
-class TestPin : public IOPin<M, M::PortB, 1> {};
+class TestPin : public IOPin<M, M::PortC, 0> {};
 
 int main()
 {	
     TestPin::setHigh();
-    sleep_mode();
     return 0;
 }

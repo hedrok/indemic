@@ -63,6 +63,7 @@ class IOPin
          */
         static void setHigh()
         {
+            Port::portRegister() |= (1 << pin_number);
         }
 
         /**

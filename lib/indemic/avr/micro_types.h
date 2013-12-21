@@ -31,7 +31,7 @@ namespace avr
     typedef uint8_t pin_ind_t;
 
     /** Represents type of PORT */
-    typedef volatile uint8_t& port_t;
+    typedef volatile uint8_t& register_t;
 
     /** Represents type of port mask */
     typedef uint8_t port_mask_t;
