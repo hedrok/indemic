@@ -19,13 +19,17 @@
 
 #include <avr/IOPin.h>
 #include <avr/io.h>
-#include "../Board.h"
+#include <microcontrollers.h>
+#include "../HelloLed.h"
 
 namespace Led
 {
-    void initBoard(Board &board)
-    {
-        static IndeMic::avr::IOPin led(PORTC, 6);
-        board.led = &led;
-    }
+
+    class RedLed : public IndeMic::avr::IOPin<AT90USB162Mic, void, void> {};
+    class YellowLed : public IndeMic::avr::IOPin<AT90USB162Mic, void, void> {};
 };
+
+int main()
+{
+    HelloLed<Led::RedLed, Led::YellowLed>::main();
+}

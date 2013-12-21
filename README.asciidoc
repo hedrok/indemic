@@ -1,0 +1,72 @@
+IndeMic project goals
+=====================
+
+. Application should be INDEpendent of MICrocontroller
+. Easy to add new microcontrollers (both family and products)
+. Implementation should be easily shared by different products
+  implementation and it should be easy to make different implementation
+  for different products
+. Fully unit tested.
+. There should be no extra code generated when using IndeMic library
+  comparing to writing in plain C (when compiled with -Os flag)
+
+= Status
+
+Everything in this document is only plans currently. But I'm working on
+it :)
+
+= Introduction
+
+IndeMic is template library with heavy usage of templates and C++ 11 features.
+This is the only way I know to achieve project goals without
+code size overhead. Following sections will tell in tutorial-like manner how to
+use the library.
+
+= Abstract interface for microcontroller hardware
+
+The simplest example is IOPin template class.
+
+Library definition:
+ $ template<typename Microcontroller, typename Port, typename Pin>
+ $ class IOPin
+ $ {
+ $    public:
+ $       static inline void set()
+ $       {
+ $          Port::port |= pin::mask;
+ $       }
+ $ };
+
+Usage in board file:
+ $ class RedLed : public IOPin<AT90USB162, AVRPort<PortB_base>, AVRPin<3> > {};
+ $ class GreenLed : public IOPin<AT90USB162, AVRPort<PortD_base>, AVRPin<4> > {};
+
+Usage in application:
+ $ RedLed::set();
+
+This way application knows nothing about microcontroller it uses,
+but no extra code is generated because of usage of templates and
+-Os optimization.
+
+= Easy to add new microcontroller families/products
+
+I am working with two families of microcontroller: AVR and STM32.
+New family can be implemented by copying nearest. Families cannot
+share code currently.
+Products are added by adding new empty class to indemic/**family**/products.h
+and deriving it from appropriate product/subfamily.
+Then any class that should be changed can be specialized for this
+microcontroller, or it will use default implementation for family
+by templates magic.
+
+= Interrupts
+
+I'm planning to implement interrupts handling by modification of linker
+scripts: instead of +vectors+ section I'll create separate section
+for each interrupt, and will create static pointer to static function
+in template class in that section. Memory for that pointer will be
+allocated only at template instantiation time, and some check on
+section size (there should be only one interrupt handler) can
+be easily made. Other option is creating array of pointers to
+interrupt handlers (similar to static object constructors), and
+creating one simple "real" interrupt handler that calls them all.

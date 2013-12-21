@@ -18,7 +18,7 @@
  */
 #pragma once
 
-#include <IOPin.h>
+#include <micro_types.h>
 
 namespace IndeMic
 {
@@ -29,24 +29,14 @@ namespace avr
  * One Input/Output Pin class
  * AVR implementation
  */
-class IOPin : public IndeMic::IOPin
+template<typename Microcontroller, typename Port, typename Pin>
+class IOPin
 {
     public:
         /**
-         * Constructor. No initialization of pin state is done
-         * @param port port_t
-         * @param pin pin_ind_t
-         */
-        IOPin(port_t port, pin_ind_t pin)
-            : IndeMic::IOPin(port, pin)
-            , _port_mask(1 << pin)
-        {
-        }
-
-        /**
          * Read value from pin
          */
-        logic_t get() override
+        static logic_t get()
         {
             return 0;
         }
@@ -54,14 +44,14 @@ class IOPin : public IndeMic::IOPin
         /**
          * Make pin input
          */
-        void makeInput() override
+        static void makeInput()
         {
         }
 
         /**
          * Make pin output
          */
-        void makeOutput()
+        static void makeOutput()
         {
         }
 
@@ -71,7 +61,7 @@ class IOPin : public IndeMic::IOPin
          * All preferences like setting it output pin etc
          * should be done beforehand
          */
-        void setHigh()
+        static void setHigh()
         {
         }
 
@@ -80,7 +70,7 @@ class IOPin : public IndeMic::IOPin
          *
          * Set to output etc beforehand.
          */
-        void setLow()
+        static void setLow()
         {
         }
 
@@ -89,13 +79,9 @@ class IOPin : public IndeMic::IOPin
          *
          * Set to output etc beforehand.
          */
-        void setValue(logic_t value)
+        static void setValue(logic_t value)
         {
         }
-
-    protected:
-        /** Port mask of controlled pin */
-        port_mask_t _port_mask;
 };
 
 }

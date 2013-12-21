@@ -1,5 +1,5 @@
 /**
- * @file main.cpp
+ * @file HelloLed.h
  * @author Kirill Yatsenko <kirill.yatsenko@hedrok.org>
  *
  * @section LICENSE
@@ -17,27 +17,24 @@
  *
  * @section DESCRIPTION
  *
- * main file of LED test using multi-platform library IndeMic
+ * HelloLed using multi-platform library IndeMic
  */
 
-#include <IOPin.h>
-
-#include "Board.h"
-
-int main()
+template<typename RedLed, typename YellowLed>
+class HelloLed
 {
-    Led::Board board;
-    Led::initBoard(board);
-    IndeMic::IOPin *pin = board.led;
-
-    pin->makeOutput();
-    while (true)
+public:
+    static void main()
     {
-        pin->setHigh();
-        for (uint32_t t = 0; t < 16L * 1024 * 1024; t++) {
-        }
-        pin->setLow();
-        for (uint32_t t = 0; t < 16L* 1024 * 1024; t++) {
+        RedLed::makeOutput();
+        while (true)
+        {
+            RedLed::setHigh();
+            for (uint32_t t = 0; t < 16L * 1024 * 1024; t++) {
+            }
+            RedLed::setLow();
+            for (uint32_t t = 0; t < 16L* 1024 * 1024; t++) {
+            }
         }
     }
-}
+};
