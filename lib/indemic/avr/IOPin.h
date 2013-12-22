@@ -46,6 +46,7 @@ class IOPin
          */
         static void makeInput()
         {
+            Port::ddRegister() &= ~pin_mask;
         }
 
         /**
@@ -53,6 +54,7 @@ class IOPin
          */
         static void makeOutput()
         {
+            Port::ddRegister() |= pin_mask;
         }
 
         /**

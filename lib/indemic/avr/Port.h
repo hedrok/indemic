@@ -44,14 +44,14 @@ public:
      */
     static inline register_t ddRegister()
     {
-        return static_cast<register_t>(base_address + 0x1);
+        return static_cast<register_t>(*reinterpret_cast<uint8_t*>(base_address + 0x1));
     }
     /**
      * @return PINn of port
      */
     static inline register_t pinRegister()
     {
-        return static_cast<register_t>(base_address + 0x0);
+        return static_cast<register_t>(*reinterpret_cast<uint8_t*>(base_address + 0x0));
     }
 };
 
