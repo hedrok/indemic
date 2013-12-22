@@ -16,6 +16,10 @@ class IOPinTestSuite : public CxxTest::TestSuite
             this->portState = 0;
             this->portChangesNum = 0;
             this->portExpected.clear();
+
+            this->ddrState = 0;
+            this->ddrChangesNum = 0;
+            this->ddrExpected.clear();
         }
 
         void runTest(const char* fname, int cycles)
@@ -55,12 +59,28 @@ class IOPinTestSuite : public CxxTest::TestSuite
                     static_cast<void*>(this)
                 );
             }
+            avr_irq_register_notify(
+                avr_io_getirq(avr, AVR_IOCTL_IOPORT_GETIRQ('C'), IOPORT_IRQ_DIRECTION_ALL),
+                [](struct avr_irq_t * irq, uint32_t value, void *param) {
+                    IOPinTestSuite *p = static_cast<IOPinTestSuite*>(param);
+                    p->ddrState = value;
+                    if (p->ddrChangesNum < p->ddrExpected.size()) {
+                        TS_ASSERT_EQUALS(
+                            p->ddrState,
+                            p->ddrExpected[p->ddrChangesNum]
+                        );
+                    }
+                    p->ddrChangesNum++;
+                },
+                static_cast<void*>(this)
+            );
 
             for (int i = 0; i < cycles; i++) {
 		        avr_run(avr);
             }
 
             TS_ASSERT_EQUALS(portChangesNum, this->portExpected.size());
+            TS_ASSERT_EQUALS(ddrChangesNum, this->ddrExpected.size());
         }
 
         /**
@@ -100,8 +120,30 @@ class IOPinTestSuite : public CxxTest::TestSuite
             runTest("avr-output.elf", 100);
         }
 
+        /**
+         * testing IOPin::setOutput,
+         *         IOPin::setInput,
+         */
+        void testDdr()
+        {
+            // First set 0 to output
+            this->ddrExpected.push_back(0x1);
+            // Then set 1 to output
+            this->ddrExpected.push_back(0x3);
+            // First set 0 to input
+            this->ddrExpected.push_back(0x2);
+            // Then set 1 to input
+            this->ddrExpected.push_back(0x0);
+
+            runTest("avr-ddr.elf", 100);
+        }
+
     private:
         uint8_t portState;
         size_t portChangesNum;
         std::vector<uint8_t> portExpected;
+
+        uint8_t ddrState;
+        size_t ddrChangesNum;
+        std::vector<uint8_t> ddrExpected;
 };

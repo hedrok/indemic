@@ -4,6 +4,7 @@ all:
 	cxxtestgen --error-printer -o runner.cpp IOPinTest.h
 	g++ -std=c++11 -Wall runner.cpp $(simavr_includes) $(simavr_libs) -o run-tests
 	avr-gcc -Os -I../../../ -mmcu=at90usb162 $(simavr_includes) -Wall avr-output.cpp avr-mcu.c -o avr-output.elf
+	avr-gcc -Os -I../../../ -mmcu=at90usb162 $(simavr_includes) -Wall avr-ddr.cpp avr-mcu.c -o avr-ddr.elf
 	./run-tests
 
 clean:
