@@ -90,16 +90,13 @@ class IOPinTestSuite : public CxxTest::TestSuite
          */
         void testOutput()
         {
+            // Set pins 0 and 1 output
+            this->ddrExpected.push_back(0x3);
+            // Pin 0 and 1 initialized low
+            this->portExpected.push_back(0x0);
+            this->portExpected.push_back(0x0);
+
             // First set 0 to high
-            this->portExpected.push_back(0x1);
-            // 7 messages come after change
-            // of first pin
-            this->portExpected.push_back(0x1);
-            this->portExpected.push_back(0x1);
-            this->portExpected.push_back(0x1);
-            this->portExpected.push_back(0x1);
-            this->portExpected.push_back(0x1);
-            this->portExpected.push_back(0x1);
             this->portExpected.push_back(0x1);
             // Set 1 to high
             this->portExpected.push_back(0x3);
@@ -126,6 +123,11 @@ class IOPinTestSuite : public CxxTest::TestSuite
          */
         void testDdr()
         {
+            // When setting pins 0 and 1 as output
+            // their value changes to zero
+            this->portExpected.push_back(0x0);
+            this->portExpected.push_back(0x0);
+
             // First set 0 to output
             this->ddrExpected.push_back(0x1);
             // Then set 1 to output

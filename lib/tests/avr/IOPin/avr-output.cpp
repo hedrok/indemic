@@ -14,6 +14,7 @@ class TestPin1 : public IOPin<M, M::PortC, 1> {};
 
 int main()
 {	
+    DDRC = 0x03;
     TestPin0::setHigh();
     TestPin1::setHigh();
     TestPin0::setLow();
