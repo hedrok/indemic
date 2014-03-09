@@ -27,12 +27,12 @@
 
 namespace Led
 {
+    typedef IndeMic::avr::AT90USB162Mic M;
 
-    class RedLed : public IndeMic::avr::IOPin<IndeMic::avr::AT90USB162Mic, void, void> {};
-    class YellowLed : public IndeMic::avr::IOPin<IndeMic::avr::AT90USB162Mic, void, void> {};
+    typedef IndeMic::avr::IOPin<M, M::PortC, 2> YellowLed;
 };
 
 int main()
 {
-    HelloLed<Led::RedLed, Led::YellowLed>::main();
+    HelloLed<Led::YellowLed>::main();
 }

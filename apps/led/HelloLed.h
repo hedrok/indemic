@@ -20,21 +20,16 @@
  * HelloLed using multi-platform library IndeMic
  */
 
-template<typename RedLed, typename YellowLed>
+template<typename Led>
 class HelloLed
 {
 public:
     static void main()
     {
-        RedLed::makeOutput();
+        Led::makeOutput();
+        Led::setHigh();
         while (true)
         {
-            RedLed::setHigh();
-            for (uint32_t t = 0; t < 16L * 1024 * 1024; t++) {
-            }
-            RedLed::setLow();
-            for (uint32_t t = 0; t < 16L* 1024 * 1024; t++) {
-            }
         }
     }
 };
