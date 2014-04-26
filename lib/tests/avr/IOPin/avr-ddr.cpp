@@ -13,7 +13,7 @@ class TestPin0 : public IOPin<M, M::PortC, 0> {};
 class TestPin1 : public IOPin<M, M::PortC, 1> {};
 
 int main()
-{	
+{
     //DDRC |= 1;
     TestPin0::makeOutput();
     //DDRC |= 2;
