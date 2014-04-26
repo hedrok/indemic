@@ -14,6 +14,7 @@ IndeMic project goals
 
 Everything in this document is only plans currently. But I'm working on
 it :)
+The only implemented class is IOPin for AVR.
 
 == Introduction
 
@@ -58,7 +59,7 @@ but no extra code is generated because of usage of templates and
 I am working with two families of microcontroller: AVR and STM32.
 New family can be implemented by copying nearest. Families cannot
 share code currently.
-Products are added by adding new empty class to indemic/**family**/products.h
+Products are added by adding new class to indemic/**family**/products.h
 and deriving it from appropriate product/subfamily.
 Then any class that should be changed can be specialized for this
 microcontroller, or it will use default implementation for family
