@@ -28,20 +28,26 @@ class RegisterBit;
  * Represents one microcontroller register value
  * @param Register - register class for which this value is
  */
-template <typename Register>
+template <typename R>
 class RegisterValue
 {
     public:
         template <uint8_t bitIndex>
-        constexpr RegisterValue<Register> operator|(const RegisterBit<Register, bitIndex>& other)
+        constexpr RegisterValue<R> operator|(const RegisterBit<R, bitIndex>& other)
         {
-            return RegisterValue<Register>(_value | (other._value << bitIndex));
+            return RegisterValue<R>(_value | (other._value << bitIndex));
         }
-    //private:
-        //friend class Register;
-        //friend template<bitIndex> class RegisterBit<Register, bitIndex>;
-        constexpr RegisterValue(typename Register::value_t v) : _value(v) {};
-        typename Register::value_t _value;
+    private:
+        friend R;
+
+        template<class Register, uint8_t bitIndex> 
+        friend class RegisterBit;
+
+        template<typename M, uint32_t address, typename Derived>
+        friend class RegisterBase;
+
+        constexpr RegisterValue(typename R::value_t v) : _value(v) {};
+        typename R::value_t _value;
 };
 
 }

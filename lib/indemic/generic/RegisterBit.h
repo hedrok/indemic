@@ -49,8 +49,9 @@ class RegisterBit
         {
             return RegisterValue<Register>(other._value | (_value << bitIndex));
         }
-    //private:
-        //friend template<bitIndex> class RegisterBit<Register, bitIndex>;
+    private:
+        friend class RegisterValue<Register>;
+
         uint8_t _value;
 };
 
