@@ -27,16 +27,31 @@ namespace IndeMic
  * Represents one microcontroller register bit
  * @param Register - Register containing this bit
  * @param bitIndex
+ * @param width - maximum number of bits of value
  */
-template <typename Register, uint8_t bitIndex>
+template <typename Register, uint8_t bitIndex, uint8_t width = 1>
 class RegisterBit
 {
     public:
-        constexpr RegisterBit(uint8_t v = 1) : _value(v) {};
+        /**
+         * Constructor
+         * @param v Default value of this bit array
+         *          If width is 1, 1 by default, otherwise 0 by default
+         */
+        constexpr RegisterBit(uint8_t v = ((width == 1) ? 1 : 0))
+            : _value((v < (1 << width)) ? v : throw "Provided value of register doesn't fit") {};
 
         constexpr operator RegisterValue<Register>()
         {
             return RegisterValue<Register>(_value << bitIndex);
+        }
+        constexpr RegisterValue<Register> operator()(uint8_t v)
+        {
+            return (v < (1 << width)) ? RegisterValue<Register>(v << bitIndex) : throw "Provided value of register doesn't fit";
+        }
+        constexpr RegisterValue<Register> mask()
+        {
+            return ((1 << width) - 1) << bitIndex;
         }
 
         template<int otherBitIndex>
