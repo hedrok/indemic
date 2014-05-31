@@ -32,26 +32,30 @@ namespace IndeMic
 template <typename Register, uint8_t bitIndex, uint8_t width = 1>
 class RegisterBit
 {
+    static_assert(bitIndex >= 0, "bitIndex cannot be negative");
+    static_assert(width > 0, "width must be positive");
+    static_assert(bitIndex + width <= (sizeof(typename Register::value_t) * 8), "too wide bitfield");
+
     public:
         /**
          * Constructor
-         * @param v Default value of this bit array
-         *          If width is 1, 1 by default, otherwise 0 by default
          */
-        constexpr RegisterBit(uint8_t v = ((width == 1) ? 1 : 0))
-            : _value((v < (1 << width)) ? v : throw "Provided value of register doesn't fit") {};
+        constexpr RegisterBit()
+            : _value(1 << (width - 1))
+        {
+        }
 
         constexpr operator RegisterValue<Register>()
         {
             return RegisterValue<Register>(_value << bitIndex);
         }
-        constexpr RegisterValue<Register> operator()(uint8_t v)
-        {
-            return (v < (1 << width)) ? RegisterValue<Register>(v << bitIndex) : throw "Provided value of register doesn't fit";
-        }
+
+        template<uint8_t v = ((1 << width) - 1)>
         constexpr RegisterValue<Register> mask()
         {
-            return ((1 << width) - 1) << bitIndex;
+            static_assert(v >= 0, "Value of register bit cannot be negative");
+            static_assert(v < (1 << width), "Value of register bit doesn't fit");
+            return RegisterValue<Register>((v) << bitIndex);
         }
 
         template<int otherBitIndex>

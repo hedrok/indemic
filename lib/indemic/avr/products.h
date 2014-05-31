@@ -28,14 +28,19 @@ namespace IndeMic
 namespace avr
 {
     /** Generic AVR microcontroller */
-    class AVRMic {};
+    class AVRMic
+    {
+        public:
+            typedef volatile uint8_t register_t;
+            typedef uint8_t register_value_t;
+    };
 
     class AT90USB162Mic : public AVRMic
     {
         public:
-            typedef Port<0x23> PortB;
-            typedef Port<0x26> PortC;
-            typedef Port<0x29> PortD;
+            typedef Port<AT90USB162Mic, 0x23> PortB;
+            typedef Port<AT90USB162Mic, 0x26> PortC;
+            typedef Port<AT90USB162Mic, 0x29> PortD;
     };
 }
 }

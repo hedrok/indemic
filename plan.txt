@@ -1,4 +1,5 @@
 001 Register bitset class
     002 Just set of named bits
     003 Goups of named bits
+    005 Rewrite IOPin to use Register class
     004 Group of bits in different real registers.

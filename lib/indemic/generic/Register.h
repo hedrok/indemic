@@ -49,7 +49,7 @@ class RegisterBase
         {
             return static_cast<typename M::register_t&>(*reinterpret_cast<typename M::register_t*>(address));
         }
-        typedef typename M::register_t value_t;
+        typedef typename M::register_value_t value_t;
 };
 
 }

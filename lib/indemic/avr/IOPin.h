@@ -19,6 +19,7 @@
 #pragma once
 
 #include <indemic/avr/micro_types.h>
+#include <indemic/generic/RegisterBit.h>
 
 namespace IndeMic
 {
@@ -29,14 +30,14 @@ namespace avr
  * One Input/Output Pin class
  * AVR implementation
  */
-template<typename Microcontroller, typename Port, int pin_number>
+template<typename Microcontroller, typename Port, uint8_t pin>
 class IOPin
 {
     public:
         /**
          * Read value from pin
          */
-        static logic_t get()
+        static inline logic_t get()
         {
             return 0;
         }
@@ -44,17 +45,17 @@ class IOPin
         /**
          * Make pin input
          */
-        static void makeInput()
+        static inline void makeInput()
         {
-            Port::ddRegister() &= ~pin_mask;
+            Port::DDR::clear(_ddrBit);
         }
 
         /**
          * Make pin output
          */
-        static void makeOutput()
+        static inline void makeOutput()
         {
-            Port::ddRegister() |= pin_mask;
+            Port::DDR::set(_ddrBit);
         }
 
         /**
@@ -63,9 +64,9 @@ class IOPin
          * All preferences like setting it output pin etc
          * should be done beforehand
          */
-        static void setHigh()
+        static inline void setHigh()
         {
-            Port::portRegister() |= pin_mask;
+            Port::PORT::set(_portBit);
         }
 
         /**
@@ -73,9 +74,9 @@ class IOPin
          *
          * Set to output etc beforehand.
          */
-        static void setLow()
+        static inline void setLow()
         {
-            Port::portRegister() &= ~pin_mask;
+            Port::PORT::clear(_portBit);
         }
 
         /**
@@ -83,7 +84,7 @@ class IOPin
          *
          * Set to output etc beforehand.
          */
-        static void setValue(logic_t value)
+        static inline void setValue(logic_t value)
         {
             if (value) {
                 setHigh();
@@ -92,7 +93,9 @@ class IOPin
             }
         }
     private:
-        enum { pin_mask = 1 << pin_number};
+        constexpr static RegisterBit<typename Port::PORT, pin> _portBit = RegisterBit<typename Port::PORT, pin>();
+        constexpr static RegisterBit<typename Port::PIN, pin> _pinBit = RegisterBit<typename Port::PIN, pin>();
+        constexpr static RegisterBit<typename Port::DDR, pin> _ddrBit = RegisterBit<typename Port::DDR, pin>();
 };
 
 }
