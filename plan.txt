@@ -2,4 +2,6 @@
     002 Just set of named bits
     003 Goups of named bits
     005 Rewrite IOPin to use Register class
+    006 Optimize IOPin/Register to produce one assembler instruction
+        on AVR
     004 Group of bits in different real registers.
