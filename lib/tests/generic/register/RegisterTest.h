@@ -4,7 +4,7 @@
 #include <indemic/generic/RegisterValue.h>
 
 static uint8_t pseudoregister;
-constexpr uint64_t address = 0x60e753;
+constexpr uint64_t address = 0x60e7b3;
 
 class TestMicrocontroller
 {
@@ -56,7 +56,11 @@ class RegisterTestSuite : public CxxTest::TestSuite
             TS_ASSERT_EQUALS(pseudoregister, 0x93);
             TCCR0A::clear(TCCR0A::WGM01);
             TS_ASSERT_EQUALS(pseudoregister, 0x91);
+            pseudoregister = 0x93;
             TCCR0A::clear(TCCR0A::WGM0.mask());
+            TS_ASSERT_EQUALS(pseudoregister, 0x90);
+            pseudoregister = 0x93;
+            TCCR0A::clear(TCCR0A::WGM0);
             TS_ASSERT_EQUALS(pseudoregister, 0x90);
             TCCR0A::set(TCCR0A::WGM0.mask<2>());
             TS_ASSERT_EQUALS(pseudoregister, 0x92);

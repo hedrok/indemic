@@ -41,7 +41,7 @@ class RegisterBit
          * Constructor
          */
         constexpr RegisterBit()
-            : _value(1 << (width - 1))
+            : _value((1 << width) - 1)
         {
         }
 
