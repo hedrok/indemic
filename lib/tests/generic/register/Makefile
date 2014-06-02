@@ -1,5 +1,5 @@
 all:
-	cxxtestgen --error-printer -o runner.cpp RegisterTest.h
+	cxxtestgen --error-printer -o runner.cpp RegisterTest.h RegisterMultiSetterTest.h
 	g++ -std=c++11 -I../../..  -Wall runner.cpp -o run-tests
 	./run-tests
 
