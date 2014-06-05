@@ -21,7 +21,9 @@
 namespace IndeMic
 {
 
-template <typename Register, uint8_t bitIndex, uint8_t width>
+class RegisterVisitor;
+
+template <typename Register, uint8_t bitIndex, uint8_t width, uint64_t value>
 class RegisterBit;
 
 /**
@@ -32,21 +34,24 @@ template <typename R>
 class RegisterValue
 {
     public:
-        template <uint8_t bitIndex, uint8_t width>
-        constexpr RegisterValue<R> operator|(const RegisterBit<R, bitIndex, width>& other)
+        template <uint8_t bitIndex, uint8_t width, uint64_t value>
+        constexpr RegisterValue<R> operator|(const RegisterBit<R, bitIndex, width, value>& other)
         {
             return RegisterValue<R>(_value | (other._value << bitIndex));
         }
     private:
         friend R;
 
-        template<class Register, uint8_t bitIndex, uint8_t width> 
+        friend class RegisterVisitor;
+
+        template<class Register, uint8_t bitIndex, uint8_t width, uint64_t value> 
         friend class RegisterBit;
 
         template<typename M, uint32_t address, typename Derived>
         friend class RegisterBase;
 
         constexpr RegisterValue(typename R::value_t v) : _value(v) {};
+
         typename R::value_t _value;
 };
 
