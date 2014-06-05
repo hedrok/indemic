@@ -1,29 +1,7 @@
-I CNC machine stage 1
-II PCB production stage 1
-III Multicopter stage 1
-IV CNC machine stage 2
-V 3D-printer
-
-I
-    +1. Stepper boards
-        +1.1 pcb
-        +1.2 manufacture
-    +2. Switch board
-        +2.1 pcb
-        +2.2 manufacture
-    3. Firmware for AVR board - drilling, manual control
-    4. Hardware - make motor mounts MUCH better
-    5. Upload of drill files, script for converting .drl files to
-       file of commands. Tool button.
-II
-    1. Electroplating
-    2. solder mask
-    3. Solder stencil ?..
-III
-    1. Brushless controller
-    2. Fly
-IV 
-    1. Gcode
-    2. SD-card
-    3. LCD screen
-    
+001 Register bitset class
+    002 Just set of named bits
+    003 Goups of named bits
+    005 Rewrite IOPin to use Register class
+    006 Optimize IOPin/Register to produce one assembler instruction
+        on AVR
+    004 Group of bits in different real registers.

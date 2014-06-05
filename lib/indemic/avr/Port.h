@@ -19,6 +19,7 @@
 #pragma once
 
 #include <indemic/avr/micro_types.h>
+#include <indemic/generic/Register.h>
 
 namespace IndeMic
 {
@@ -28,31 +29,13 @@ namespace avr
 /**
  * Incapsulates AVR port
  */
-template<int base_address>
+template<typename M, int base_address>
 class Port
 {
 public:
-    /**
-     * @return PORTn of port
-     */
-    static inline register_t portRegister()
-    {
-        return static_cast<register_t>(*reinterpret_cast<uint8_t*>(base_address + 0x2));
-    }
-    /**
-     * @return DDRn of port
-     */
-    static inline register_t ddRegister()
-    {
-        return static_cast<register_t>(*reinterpret_cast<uint8_t*>(base_address + 0x1));
-    }
-    /**
-     * @return PINn of port
-     */
-    static inline register_t pinRegister()
-    {
-        return static_cast<register_t>(*reinterpret_cast<uint8_t*>(base_address + 0x0));
-    }
+    class PIN : public RegisterBase<M, base_address + 0x0, PIN> {};
+    class DDR : public RegisterBase<M, base_address + 0x1, DDR> {};
+    class PORT : public RegisterBase<M, base_address + 0x2, PORT> {};
 };
 
 }
