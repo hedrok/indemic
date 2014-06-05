@@ -5,7 +5,7 @@
 
 static uint8_t pseudoregister1;
 static uint8_t pseudoregister2;
-constexpr uint64_t address1 = 0x612bf8;
+constexpr uint64_t address1 = 0x6138d8;
 
 class RegisterVisitorTestSuite : public CxxTest::TestSuite
 {
@@ -25,6 +25,12 @@ class RegisterVisitorTestSuite : public CxxTest::TestSuite
             IndeMic::RegisterVisitor::set<TCCR0A::COM0A1, TCCR0B::CS02, TCCR0A::WGM01, TCCR0B::WGM02>();
             TS_ASSERT_EQUALS(pseudoregister1, (1 << 7) | (1 << 1));
             TS_ASSERT_EQUALS(pseudoregister2, (1 << 2) | (1 << 3));
+            IndeMic::RegisterVisitor::clear<TCCR0B::CS0<>, TCCR0A::WGM01>();
+            TS_ASSERT_EQUALS(pseudoregister1, (1 << 7));
+            TS_ASSERT_EQUALS(pseudoregister2, (1 << 3));
+            pseudoregister2 = 0;
+            IndeMic::RegisterVisitor::set<TCCR0B::CS0<6>>();
+            TS_ASSERT_EQUALS(pseudoregister2, 6);
         }
         class TestMicrocontroller
         {
@@ -54,8 +60,8 @@ class RegisterVisitorTestSuite : public CxxTest::TestSuite
                 typedef IndeMic::RegisterBit<TCCR0B, 1> CS01 ;
                 typedef IndeMic::RegisterBit<TCCR0B, 0> CS00 ;
 
-        //        template<uint64_t value>
-        //        class CS0<value> : public IndeMic::RegisterBit<TCCR0A, 0, 3, value>;
+                template<uint64_t value = ((1 << 3) - 1)>
+                using CS0 = IndeMic::RegisterBit<TCCR0B, 0, 3, value>;
         };
 
 };
