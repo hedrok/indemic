@@ -25,15 +25,6 @@ using namespace IndeMic::avr;
 
 typedef AT90USB162Mic M;
 
-extern "C" void __init();
-extern "C" void __vector_default()
-{
-    while (true) {}
-}
-
-__attribute__ ((used)) __attribute__ ((section (".reset_vector"))) const uint16_t reset[2] = {0x940c, ((uint16_t)(&__init))};
-__attribute__ ((used)) __attribute__ ((section (".int0_vector"))) const uint16_t int0[2] = {0x940c, ((uint16_t)(&Functor::call))};
-
 class ExtInt : public ExternalInterrupt<M, M::Int0, Functor> {};
 
 int main()

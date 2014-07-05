@@ -64,11 +64,23 @@ namespace avr
                 {
                     public:
                         enum {t = 1};
-                        //static __attribute__ ((section ("interrupt_int0"))) void (*interrupt)();
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".int0_vector")))
+                               const uint16_t interrupt[2];
                 };
             };
     };
-    //template<typename Functor>
-    //void (*AT90USB162Mic::Int0::Interrupt<Functor>::interrupt)() = &Functor::call;
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".int0_vector")))
+        const uint16_t AT90USB162Mic::Int0::Interrupt<Functor>::interrupt[2]
+            = {0x940c, ((uint16_t)(&Functor::call))};
 }
 }
+
+extern "C" void __init();
+extern "C" void __vector_default()
+{
+    while (true) {}
+}
+__attribute__ ((used)) __attribute__ ((section (".reset_vector"))) const uint16_t reset[2] = {0x940c, ((uint16_t)(&__init))};
