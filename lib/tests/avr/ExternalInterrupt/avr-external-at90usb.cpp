@@ -25,7 +25,8 @@ using namespace IndeMic::avr;
 
 typedef AT90USB162Mic M;
 
-class ExtInt : public ExternalInterrupt<M, M::Int0, Functor> {};
+template<typename F>
+class ExtInt : public ExternalInterrupt<M, M::Int0, F> {};
 
 int main()
 {	
@@ -42,8 +43,8 @@ int main()
     EICRA |= (1 << ISC01) | (1 << ISC00);
     EIMSK |= (1 << INT0);
     */
-    ExtInt::interruptOnRisingEdge();
-    ExtInt::enable();
+    ExtInt<Functor>::interruptOnRisingEdge();
+    ExtInt<Functor>::enable();
 
     sei();
     
