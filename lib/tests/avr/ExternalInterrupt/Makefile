@@ -6,5 +6,7 @@ all:
 	avr-gcc -v -std=c++11 -Tavr35.x -Os -I../../../ -mmcu=at90usb162 $(simavr_includes) -Wall avr-external-at90usb.cpp avr-mcu.c -o avr-external-at90usb.elf
 	./run-tests
 
+hex:
+	avr-objcopy -j .text -j .data -O ihex avr-external-at90usb.elf avr-external-at90usb.hex
 clean:
 	rm -f *.elf *.o runner.cpp run-tests
