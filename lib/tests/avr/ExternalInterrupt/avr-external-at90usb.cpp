@@ -2,10 +2,35 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
+#include <indemic/avr/products.h>
+#include <indemic/avr/ExternalInterrupt.h>
+
+/*
 ISR(INT0_vect)
 {
     PORTC |= 1;
 }
+*/
+
+class Functor
+{
+    public:
+        static inline void call()
+        {
+            PORTC |= 1;
+        }
+};
+
+ISR(INT0_vect)
+{
+    Functor::call();
+}
+
+using namespace IndeMic::avr;
+
+typedef AT90USB162Mic M;
+
+class ExtInt : public ExternalInterrupt<M, M::Int0, Functor> {};
 
 int main()
 {	
@@ -17,9 +42,13 @@ int main()
     DDRD |= 1;
     PORTD &= ~1;
 
+    /*
     // Enable external interrupt on rising edge on INT0 (PD0)
     EICRA |= (1 << ISC01) | (1 << ISC00);
     EIMSK |= (1 << INT0);
+    */
+    ExtInt::interruptOnRisingEdge();
+    ExtInt::enable();
 
     sei();
     

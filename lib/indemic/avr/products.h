@@ -22,6 +22,7 @@
 #pragma once
 
 #include <indemic/avr/Port.h>
+#include <indemic/generic/RegisterBit.h>
 
 namespace IndeMic
 {
@@ -38,9 +39,36 @@ namespace avr
     class AT90USB162Mic : public AVRMic
     {
         public:
+            typedef AT90USB162Mic M;
+
             typedef Port<AT90USB162Mic, 0x23> PortB;
             typedef Port<AT90USB162Mic, 0x26> PortC;
             typedef Port<AT90USB162Mic, 0x29> PortD;
+
+            // External Interrupt Registers
+            class EicrA : public RegisterBase<M, 0x69, EicrA> {};
+            class EicrB : public RegisterBase<M, 0x6a, EicrB> {};
+            class Eimsk : public RegisterBase<M, 0x3d, Eimsk> {};
+
+            class Int0
+            {
+                public:
+                class ISCn0 : public RegisterBit<EicrA, 0> {};
+                class ISCn1 : public RegisterBit<EicrA, 1> {};
+
+                class INTn : public RegisterBit<Eimsk, 0> {};
+
+                //Interrupt description
+                template<typename Functor>
+                class Interrupt
+                {
+                    public:
+                        enum {t = 1};
+                        //static __attribute__ ((section ("interrupt_int0"))) void (*interrupt)();
+                };
+            };
     };
+    //template<typename Functor>
+    //void (*AT90USB162Mic::Int0::Interrupt<Functor>::interrupt)() = &Functor::call;
 }
 }
