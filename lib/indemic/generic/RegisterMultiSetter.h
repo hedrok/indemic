@@ -44,6 +44,18 @@ class RegisterMultiSetter
 
 namespace
 {
+    template<typename A, typename B>
+    class is_same
+    {
+        public:
+            enum {value = 0};
+    };
+    template<typename T>
+    class is_same<T, T>
+    {
+        public:
+            enum {value = 1};
+    };
     template<typename... Bits>
     class BitsToProcess {};
     template<typename... Bits>
@@ -76,7 +88,7 @@ namespace
         public:
             static void work()
             {
-                if (std::is_same<Register, typename FirstBit::Register>()) {
+                if (is_same<Register, typename FirstBit::Register>::value) {
                     Worker<Functor, CurrentRegister<Register, value | FirstBit::value>, BitsToProcess<Bits1...>, BitsForNext<Bits2...> >::work();
                 } else {
                     Worker<Functor, CurrentRegister<Register, value>, BitsToProcess<Bits1...>, BitsForNext<Bits2..., FirstBit> >::work();
