@@ -72,93 +72,214 @@ SECTIONS
   /* Internal text space or external memory.  */
   .text   :
   {
+      . = 0;
+      FILL(0x0c94);
+      . = . + 2;
+      FILL(0x3a00);
       *(.reset_vector)
       KEEP(*(.reset_vector))
+
       . = 4;
+      FILL(0x0c94);
+      . = . + 2;
+      FILL(0x3a00);
       *(.int0_vector)
       KEEP(*(.int0_vector))
+
       . = 8;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00);
       *(.int1_vector)
       KEEP(*(.int1_vector))
+
       . = 12;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.int2_vector)
       KEEP(*(.int2_vector))
+
       . = 16;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.int3_vector)
       KEEP(*(.int3_vector))
+
       . = 20;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.int4_vector)
       KEEP(*(.int4_vector))
+
       . = 24;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.int5_vector)
       KEEP(*(.int5_vector))
+
       . = 28;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.int6_vector)
       KEEP(*(.int6_vector))
+
       . = 32;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.int7_vector)
       KEEP(*(.int7_vector))
+
       . = 36;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.pcint0_vector)
       KEEP(*(.pcint0_vector))
+
       . = 40;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.pcint1_vector)
       KEEP(*(.pcint1_vector))
+
       . = 44;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.usb_general_vector)
       KEEP(*(.usb_general_vector))
+
       . = 48;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.usb_endpoint_vector)
       KEEP(*(.usb_endpoint_vector))
+
       . = 52;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.wdt_vector)
       KEEP(*(.wdt_vector))
+
       . = 56;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.timer1_capt_vector)
       KEEP(*(.timer1_capt_vector))
+
       . = 60;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.timer1_compa_vector)
       KEEP(*(.timer1_compa_vector))
+
       . = 64;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.timer1_compb_vector)
       KEEP(*(.timer1_compb_vector))
+
       . = 68;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.timer1_compc_vector)
       KEEP(*(.timer1_compc_vector))
+
       . = 72;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.timer1_ovf_vector)
       KEEP(*(.timer1_ovf_vector))
+
       . = 76;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.timer0_compa_vector)
       KEEP(*(.timer0_compa_vector))
+
       . = 80;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.timer0_compb_vector)
       KEEP(*(.timer0_compb_vector))
+
       . = 84;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.timer0_ovf_vector)
       KEEP(*(.timer0_ovf_vector))
+
       . = 88;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.spi_stc_vector)
       KEEP(*(.spi_stc_vector))
+
       . = 92;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.usart1_rx_vector)
       KEEP(*(.usart1_rx_vector))
+
       . = 96;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.usart1_udre_vector)
       KEEP(*(.usart1_udre_vector))
+
       . = 100;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.usart1_tx_vector)
       KEEP(*(.usart1_tx_vector))
+
       . = 104;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.analog_comp_vector)
       KEEP(*(.analog_comp_vector))
+
       . = 108;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.ee_ready_vector)
       KEEP(*(.ee_ready_vector))
+
       . = 112;
+      FILL(0x0c94)
+      . = . + 2;
+      FILL(0x3a00)
       *(.spm_ready_vector)
       KEEP(*(.spm_ready_vector))
+
       . = 116;
+      FILL(0)
+
+      *(.error_interrupt_handler)
+      KEEP(*(.error_interrupt_handler))
 
       /*
       *(.vectors)

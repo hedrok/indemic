@@ -66,7 +66,7 @@ namespace avr
                         enum {t = 1};
                         static __attribute__ ((used)) 
                                __attribute__ ((section (".int0_vector")))
-                               const uint16_t interrupt[2];
+                               const uint16_t interrupt;
                 };
             };
 
@@ -86,7 +86,7 @@ namespace avr
                         enum {t = 1};
                         static __attribute__ ((used)) 
                                __attribute__ ((section (".int1_vector")))
-                               const uint16_t interrupt[2];
+                               const uint16_t interrupt;
                 };
             };
 
@@ -106,31 +106,33 @@ namespace avr
                         enum {t = 1};
                         static __attribute__ ((used)) 
                                __attribute__ ((section (".int2_vector")))
-                               const uint16_t interrupt[2];
+                               const uint16_t interrupt;
                 };
             };
     };
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".int0_vector")))
-        const uint16_t AT90USB162Mic::Int0::Interrupt<Functor>::interrupt[2]
-            = {0x940c, ((uint16_t)(&Functor::call))};
+        const uint16_t AT90USB162Mic::Int0::Interrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::call);
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".int1_vector")))
-        const uint16_t AT90USB162Mic::Int1::Interrupt<Functor>::interrupt[2]
-            = {0x940c, ((uint16_t)(&Functor::call))};
+        const uint16_t AT90USB162Mic::Int1::Interrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::call);
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".int2_vector")))
-        const uint16_t AT90USB162Mic::Int2::Interrupt<Functor>::interrupt[2]
-            = {0x940c, ((uint16_t)(&Functor::call))};
+        const uint16_t AT90USB162Mic::Int2::Interrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::call);
 }
 }
 
 extern "C" void __init();
-extern "C" void __vector_default()
+extern "C"
+__attribute__ ((section (".error_interrupt_handler")))
+void __vector_default()
 {
     while (true) {}
 }
-__attribute__ ((used)) __attribute__ ((section (".reset_vector"))) const uint16_t reset[2] = {0x940c, ((uint16_t)(&__init))};
+__attribute__ ((used)) __attribute__ ((section (".reset_vector"))) const uint16_t reset = (uint16_t)(&__init);
