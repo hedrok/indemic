@@ -5,3 +5,7 @@
     006 Optimize IOPin/Register to produce one assembler instruction
         on AVR
     004 Group of bits in different real registers.
+005 External interrupt
+    006 Prepare test on external interrupt trigger
+    007 AVR Interrupt class, vector table, LD script
+    008 Implement External Interrrupt for AVR, make test pass

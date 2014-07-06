@@ -5,7 +5,7 @@
 
 static uint8_t pseudoregister1;
 static uint8_t pseudoregister2;
-constexpr uint64_t address1 = 0x6138d8;
+constexpr uint64_t address1 = 0x6118d8;
 
 class RegisterVisitorTestSuite : public CxxTest::TestSuite
 {
