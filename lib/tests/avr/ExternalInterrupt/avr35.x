@@ -74,62 +74,91 @@ SECTIONS
   {
       *(.reset_vector)
       KEEP(*(.reset_vector))
+      . = 4;
       *(.int0_vector)
       KEEP(*(.int0_vector))
+      . = 8;
       *(.int1_vector)
       KEEP(*(.int1_vector))
+      . = 12;
       *(.int2_vector)
       KEEP(*(.int2_vector))
+      . = 16;
       *(.int3_vector)
       KEEP(*(.int3_vector))
+      . = 20;
       *(.int4_vector)
       KEEP(*(.int4_vector))
+      . = 24;
       *(.int5_vector)
       KEEP(*(.int5_vector))
+      . = 28;
       *(.int6_vector)
       KEEP(*(.int6_vector))
+      . = 32;
       *(.int7_vector)
       KEEP(*(.int7_vector))
+      . = 36;
       *(.pcint0_vector)
       KEEP(*(.pcint0_vector))
+      . = 40;
       *(.pcint1_vector)
       KEEP(*(.pcint1_vector))
+      . = 44;
       *(.usb_general_vector)
       KEEP(*(.usb_general_vector))
+      . = 48;
       *(.usb_endpoint_vector)
       KEEP(*(.usb_endpoint_vector))
+      . = 52;
       *(.wdt_vector)
       KEEP(*(.wdt_vector))
+      . = 56;
       *(.timer1_capt_vector)
       KEEP(*(.timer1_capt_vector))
+      . = 60;
       *(.timer1_compa_vector)
       KEEP(*(.timer1_compa_vector))
+      . = 64;
       *(.timer1_compb_vector)
       KEEP(*(.timer1_compb_vector))
+      . = 68;
       *(.timer1_compc_vector)
       KEEP(*(.timer1_compc_vector))
+      . = 72;
       *(.timer1_ovf_vector)
       KEEP(*(.timer1_ovf_vector))
+      . = 76;
       *(.timer0_compa_vector)
       KEEP(*(.timer0_compa_vector))
+      . = 80;
       *(.timer0_compb_vector)
       KEEP(*(.timer0_compb_vector))
+      . = 84;
       *(.timer0_ovf_vector)
       KEEP(*(.timer0_ovf_vector))
+      . = 88;
       *(.spi_stc_vector)
       KEEP(*(.spi_stc_vector))
+      . = 92;
       *(.usart1_rx_vector)
       KEEP(*(.usart1_rx_vector))
+      . = 96;
       *(.usart1_udre_vector)
       KEEP(*(.usart1_udre_vector))
+      . = 100;
       *(.usart1_tx_vector)
       KEEP(*(.usart1_tx_vector))
+      . = 104;
       *(.analog_comp_vector)
       KEEP(*(.analog_comp_vector))
+      . = 108;
       *(.ee_ready_vector)
       KEEP(*(.ee_ready_vector))
+      . = 112;
       *(.spm_ready_vector)
       KEEP(*(.spm_ready_vector))
+      . = 116;
 
       /*
       *(.vectors)
