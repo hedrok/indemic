@@ -6,7 +6,7 @@
 #include <indemic/avr/ExternalInterrupt.h>
 
 /*
-ISR(INT0_vect)
+ISR(INT2_vect)
 {
     PORTC |= 1;
 }
@@ -26,7 +26,7 @@ using namespace IndeMic::avr;
 typedef AT90USB162Mic M;
 
 template<typename F>
-class ExtInt : public ExternalInterrupt<M, M::Int0, F> {};
+class ExtInt : public ExternalInterrupt<M, M::Int2, F> {};
 
 int main()
 {	
@@ -34,9 +34,9 @@ int main()
     DDRC |= 1;
     PORTC &= ~1;
 
-    // Set PD0 as output, clear it:
-    DDRD |= 1;
-    PORTD &= ~1;
+    // Set PD2 as output, clear it:
+    DDRD |= (1 << 2);
+    PORTD &= ~(1 << 2);
 
     /*
     // Enable external interrupt on rising edge on INT0 (PD0)
@@ -50,7 +50,7 @@ int main()
     
     // Test external interrupt
 
-    PORTD |= 1;
+    PORTD |= (1 << 2);
 
     while (true) {
         continue;

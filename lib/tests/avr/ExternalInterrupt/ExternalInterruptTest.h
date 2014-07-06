@@ -66,7 +66,7 @@ class ExternalInterruptTestSuite : public CxxTest::TestSuite
         /**
          * testing External Interrupt
          */
-        void testInt0()
+        void testInt()
         {
             // Set pins 0 and 1 output
             this->portExpected.push_back(0x0);

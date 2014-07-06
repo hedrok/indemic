@@ -69,11 +69,61 @@ namespace avr
                                const uint16_t interrupt[2];
                 };
             };
+
+            class Int1
+            {
+                public:
+                class ISCn0 : public RegisterBit<EicrA, 2> {};
+                class ISCn1 : public RegisterBit<EicrA, 3> {};
+
+                class INTn : public RegisterBit<Eimsk, 1> {};
+
+                //Interrupt description
+                template<typename Functor>
+                class Interrupt
+                {
+                    public:
+                        enum {t = 1};
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".int1_vector")))
+                               const uint16_t interrupt[2];
+                };
+            };
+
+            class Int2
+            {
+                public:
+                class ISCn0 : public RegisterBit<EicrA, 4> {};
+                class ISCn1 : public RegisterBit<EicrA, 5> {};
+
+                class INTn : public RegisterBit<Eimsk, 2> {};
+
+                //Interrupt description
+                template<typename Functor>
+                class Interrupt
+                {
+                    public:
+                        enum {t = 1};
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".int2_vector")))
+                               const uint16_t interrupt[2];
+                };
+            };
     };
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".int0_vector")))
         const uint16_t AT90USB162Mic::Int0::Interrupt<Functor>::interrupt[2]
+            = {0x940c, ((uint16_t)(&Functor::call))};
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".int1_vector")))
+        const uint16_t AT90USB162Mic::Int1::Interrupt<Functor>::interrupt[2]
+            = {0x940c, ((uint16_t)(&Functor::call))};
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".int2_vector")))
+        const uint16_t AT90USB162Mic::Int2::Interrupt<Functor>::interrupt[2]
             = {0x940c, ((uint16_t)(&Functor::call))};
 }
 }
