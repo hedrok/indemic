@@ -7,7 +7,7 @@
 
 using namespace IndeMic::avr;
 
-typedef AT90USB162Mic M;
+typedef AT90USB162Mic<1> M;
 
 class TestPin0 : public IOPin<M, M::PortC, 0> {};
 class TestPin1 : public IOPin<M, M::PortC, 1> {};
