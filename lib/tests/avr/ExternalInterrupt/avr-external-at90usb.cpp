@@ -23,7 +23,7 @@ class Functor
 
 using namespace IndeMic::avr;
 
-typedef AT90USB162Mic M;
+typedef AT90USB162Mic<1> M;
 
 template<typename F>
 class ExtInt : public ExternalInterrupt<M, M::Int2, F> {};

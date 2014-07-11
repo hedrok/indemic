@@ -52,4 +52,22 @@ class RegisterBase
         typedef typename M::register_value_t value_t;
 };
 
+template<typename M, uint32_t address, typename Derived>
+class RegisterSettable : public RegisterBase<M, address, Derived>
+{
+    public:
+        static inline void set(const typename RegisterBase<M, address, Derived>::value_t v)
+        {
+            Derived::reg() |= v;
+        }
+        static inline void clear(const typename RegisterBase<M, address, Derived>::value_t v)
+        {
+            Derived::reg() &= ~v;
+        }
+        static inline void assign(const typename RegisterBase<M, address, Derived>::value_t v)
+        {
+            Derived::reg() = v;
+        }
+};
+
 }

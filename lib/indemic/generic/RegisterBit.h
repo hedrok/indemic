@@ -43,6 +43,9 @@ class RegisterBit
         typedef R Register;
         enum {value = (tvalue << bitIndex)};
 
+        template<uint64_t v>
+        class Value : public RegisterBit<R, bitIndex, width, v> {};
+
         /**
          * Constructor
          */

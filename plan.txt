@@ -9,3 +9,9 @@
     006 Prepare test on external interrupt trigger
     007 AVR Interrupt class, vector table, LD script
     008 Implement External Interrrupt for AVR, make test pass
+009 Timer class
+    010 Simple periodic call of interrupt (fixed period in cycles)
+    011 Set period in time, pass crystall frequency somehow,
+        calculate timer parameters at compile time
+    012 Calculate parameters at runtime
+    013 PWM options for one pin
