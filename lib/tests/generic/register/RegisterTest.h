@@ -4,7 +4,7 @@
 #include <indemic/generic/RegisterValue.h>
 
 static uint8_t pseudoregister;
-constexpr uint64_t address = 0x612873;
+constexpr uint64_t address = 0x611d73;
 
 class TestMicrocontroller
 {

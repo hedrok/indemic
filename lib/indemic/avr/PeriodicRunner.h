@@ -43,7 +43,7 @@ namespace avr
 template<typename M, typename Timer, typename Functor>
 class PeriodicRunner
 {
-    static_assert((Timer::template OverflowInterrupt<Functor>::t == 1), "Something very wrong. This line should just instantiate Interrupt template");
+    static_assert((Timer::template CompAInterrupt<Functor>::t == 1), "Something very wrong. This line should just instantiate Interrupt template");
     private:
         static constexpr uint64_t ocrValue(const uint64_t clocks, const uint64_t prescaler)
         {
@@ -81,11 +81,11 @@ class PeriodicRunner
         }
         static inline void enable()
         {
-            RegisterVisitor::set<typename Timer::Toie>();
+            RegisterVisitor::set<typename Timer::OcieA>();
         }
         static inline void disable()
         {
-            RegisterVisitor::clear<typename Timer::Toie>();
+            RegisterVisitor::clear<typename Timer::OcieA>();
         }
 };
 

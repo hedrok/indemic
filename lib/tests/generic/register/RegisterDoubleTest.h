@@ -5,7 +5,7 @@ namespace
 {
 static uint8_t doublepseudoregister1;
 static uint8_t doublepseudoregister2;
-constexpr uint64_t daddress1 = 0x612998;
+constexpr uint64_t daddress1 = 0x611e98;
 constexpr uint64_t daddress2 = daddress1 + 1;
 }
 

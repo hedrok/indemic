@@ -17,22 +17,24 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-
 #include <indemic/avr/IOPin.h>
 #include <indemic/avr/products.h>
-
-#include <avr/io.h>
+#include <indemic/avr/PeriodicRunner.h>
 
 #include "../HelloLed.h"
 
 namespace Led
 {
-    typedef IndeMic::avr::AT90USB162Mic M;
+    // Hm... 62.5 (16 MHz crystal) * 8 (CKDIV8) ns
+    typedef IndeMic::avr::AT90USB162Mic<500> M;
 
     typedef IndeMic::avr::IOPin<M, M::PortC, 2> YellowLed;
+
+    template<typename F>
+    class MyRunner : public IndeMic::avr::PeriodicRunner<M, M::Timer1, F> {};
 };
 
 int main()
 {
-    HelloLed<Led::YellowLed>::main();
+    HelloLed<Led::YellowLed, Led::MyRunner>::main();
 }
