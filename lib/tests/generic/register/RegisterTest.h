@@ -4,7 +4,7 @@
 #include <indemic/generic/RegisterValue.h>
 
 static uint8_t pseudoregister;
-constexpr uint64_t address = 0x611813;
+constexpr uint64_t address = 0x612873;
 
 class TestMicrocontroller
 {
@@ -46,7 +46,7 @@ class RegisterTestSuite : public CxxTest::TestSuite
             pseudoregister = 0;
             if (address != reinterpret_cast<uint64_t>(&pseudoregister)) {
                 printf("&pseudoregister: %lx, skipping test\n", reinterpret_cast<uint64_t>(&pseudoregister));
-                TS_SKIP("Skipped becuase of hardcoded variable address");
+                TS_SKIP("Skipped because of hardcoded variable address");
                 return;
             }
             constexpr IndeMic::RegisterValue<TCCR0A> v = TCCR0A::COM0A1 | TCCR0A::COM0B0 | TCCR0A::WGM00;

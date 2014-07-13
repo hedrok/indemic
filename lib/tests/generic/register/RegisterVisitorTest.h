@@ -5,7 +5,7 @@
 
 static uint8_t pseudoregister1;
 static uint8_t pseudoregister2;
-constexpr uint64_t address1 = 0x6118d8;
+constexpr uint64_t address1 = 0x612938;
 
 class RegisterVisitorTestSuite : public CxxTest::TestSuite
 {
@@ -19,7 +19,7 @@ class RegisterVisitorTestSuite : public CxxTest::TestSuite
             pseudoregister2 = 0;
             if (address1 != reinterpret_cast<uint64_t>(&pseudoregister1)) {
                 printf("&pseudoregister1: %lx, skipping test\n", reinterpret_cast<uint64_t>(&pseudoregister1));
-                TS_SKIP("Skipped becuase of hardcoded variable address");
+                TS_SKIP("Skipped because of hardcoded variable address");
                 return;
             }
             IndeMic::RegisterVisitor::set<TCCR0A::COM0A1, TCCR0B::CS02, TCCR0A::WGM01, TCCR0B::WGM02>();
