@@ -29,7 +29,7 @@ namespace IndeMic
  * @param address - address of register
  * @param Derived - class of register itself
  */
-template<typename M, uint32_t address, typename Derived>
+template<typename M, uint32_t address, typename Derived, typename register_value_t = typename M::register_value_t, typename register_t = typename M::register_t>
 class RegisterBase
 {
     public:
@@ -45,29 +45,39 @@ class RegisterBase
         {
             Derived::reg() = v._value;
         }
-        static inline typename M::register_t& reg()
+        static inline register_t& reg()
         {
-            return static_cast<typename M::register_t&>(*reinterpret_cast<typename M::register_t*>(address));
+            return static_cast<register_t&>(*reinterpret_cast<register_t*>(address));
         }
-        typedef typename M::register_value_t value_t;
+        typedef register_value_t value_t;
 };
 
-template<typename M, uint32_t address, typename Derived>
-class RegisterSettable : public RegisterBase<M, address, Derived>
+template<typename M, uint32_t address, typename Derived, typename register_value_t = typename M::register_value_t, typename register_t = typename M::register_t>
+class RegisterSettable : public RegisterBase<M, address, Derived, register_value_t, register_t>
 {
     public:
-        static inline void set(const typename RegisterBase<M, address, Derived>::value_t v)
+        static inline void set(const typename RegisterBase<M, address, Derived, register_value_t, register_t>::value_t v)
         {
             Derived::reg() |= v;
         }
-        static inline void clear(const typename RegisterBase<M, address, Derived>::value_t v)
+        static inline void clear(const typename RegisterBase<M, address, Derived, register_value_t, register_t>::value_t v)
         {
             Derived::reg() &= ~v;
         }
-        static inline void assign(const typename RegisterBase<M, address, Derived>::value_t v)
+        static inline void assign(const typename RegisterBase<M, address, Derived, register_value_t, register_t>::value_t v)
         {
             Derived::reg() = v;
         }
+};
+
+template<typename M, uint32_t address, typename Derived>
+class RegisterDoubleBase : public RegisterBase<M, address, Derived, typename M::register_double_value_t, typename M::register_double_t>
+{
+};
+
+template<typename M, uint32_t address, typename Derived>
+class RegisterDoubleSettable : public RegisterSettable<M, address, Derived, typename M::register_double_value_t, typename M::register_double_t>
+{
 };
 
 }

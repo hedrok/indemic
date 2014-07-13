@@ -47,7 +47,7 @@ class RegisterValue
         template<class Register, uint8_t bitIndex, uint8_t width, uint64_t value> 
         friend class RegisterBit;
 
-        template<typename M, uint32_t address, typename Derived>
+        template<typename M, uint32_t address, typename Derived, typename rt, typename rvt>
         friend class RegisterBase;
 
         constexpr RegisterValue(typename R::value_t v) : _value(v) {};
