@@ -1,27 +1,27 @@
-001 Register bitset class
-    002 Just set of named bits
-    003 Goups of named bits
-    005 Rewrite IOPin to use Register class
-    006 Optimize IOPin/Register to produce one assembler instruction
-        on AVR
-    004 Group of bits in different real registers.
-    -019 Double register
-005 External interrupt
-    006 Prepare test on external interrupt trigger
-    007 AVR Interrupt class, vector table, LD script
-    008 Implement External Interrrupt for AVR, make test pass
-009 Timer class
-    010 Simple periodic call of interrupt (fixed period in cycles)
-    011 Set period in time, pass crystall frequency somehow,
-        calculate timer parameters at compile time
++001 Register bitset class
+    +002 Just set of named bits
+    +003 Goups of named bits
+    +005 Rewrite IOPin to use Register class
+    +006 Optimize IOPin/Register to produce one assembler instruction
+         on AVR
+    +004 Group of bits in different real registers.
+    +019 Double register
++005 External interrupt
+    +006 Prepare test on external interrupt trigger
+    +007 AVR Interrupt class, vector table, LD script
+    +008 Implement External Interrrupt for AVR, make test pass
+*009 Timer class
+    +010 Simple periodic call of interrupt (fixed period in cycles)
+    +011 Set period in time, pass crystall frequency somehow,
+         calculate timer parameters at compile time
     -012 Calculate parameters at runtime
     -013 PWM options for one pin
     -014 Timer1 (16-bit) for AT90USB
-014 Build system
+-014 Build system
    -015 Move all building process to Scons
    -016 Tests of failed compilation
    -017 Selecting mcu by special text file, build for all of them
    -018 Check if AVR toolchain is available, avr libc is available
-020 STM32 implementation
+-020 STM32 implementation
     -021 IOPin for STM32F4
     -022 PeriodicRunner for STM32F4
