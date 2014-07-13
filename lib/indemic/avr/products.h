@@ -36,6 +36,8 @@ namespace avr
         public:
             typedef volatile uint8_t register_t;
             typedef uint8_t register_value_t;
+            typedef volatile uint16_t register_double_t;
+            typedef uint16_t register_double_value_t;
             enum {nsPerClock = ns};
     };
 
@@ -115,7 +117,7 @@ namespace avr
                 };
             };
 
-            // Timer Registers
+            // Timer0 Registers
             class Tccr0A : public RegisterBase<M, 0x44, Tccr0A> {};
             class Tccr0B : public RegisterBase<M, 0x45, Tccr0B> {};
             class Tcnt0  : public RegisterSettable<M, 0x46, Tcnt0 > {};
@@ -276,6 +278,221 @@ namespace avr
                     RegisterVisitor::set<Wgm1>();
                 }
             };
+
+            // Timer1 Registers
+            class Tccr1A : public RegisterBase<M, 0x80, Tccr1A> {};
+            class Tccr1B : public RegisterBase<M, 0x81, Tccr1B> {};
+            class Tccr1C : public RegisterBase<M, 0x82, Tccr1C> {};
+            class Tcnt1  : public RegisterDoubleSettable<M, 0x84, Tcnt1> {};
+            class Ocr1A  : public RegisterDoubleSettable<M, 0x88, Ocr1A> {};
+            class Ocr1B  : public RegisterDoubleSettable<M, 0x8a, Ocr1B> {};
+            class Ocr1C  : public RegisterDoubleSettable<M, 0x8c, Ocr1C> {};
+            class Icr1   : public RegisterDoubleSettable<M, 0x86, Icr1> {};
+            class Timsk1 : public RegisterBase<M, 0x6f, Timsk1>  {};
+            class Tifr1  : public RegisterBase<M, 0x36, Tifr1>  {};
+
+            class Timer1
+            {
+                public:
+                constexpr static uint64_t counterBits = 16;
+                constexpr static uint64_t counterResolution = 1L << counterBits;
+                typedef Tccr1A TccrA;
+                class Wgm0  : public RegisterBit<TccrA, 0> {};
+                class Wgm1  : public RegisterBit<TccrA, 1> {};
+                class ComC0 : public RegisterBit<TccrA, 2> {};
+                class ComC1 : public RegisterBit<TccrA, 3> {};
+                class ComB0 : public RegisterBit<TccrA, 4> {};
+                class ComB1 : public RegisterBit<TccrA, 5> {};
+                class ComA0 : public RegisterBit<TccrA, 6> {};
+                class ComA1 : public RegisterBit<TccrA, 7> {};
+
+                typedef Tccr1B TccrB;
+                class Cs0  : public RegisterBit<TccrB, 0> {};
+                class Cs1  : public RegisterBit<TccrB, 1> {};
+                class Cs2  : public RegisterBit<TccrB, 2> {};
+                class Wgm2 : public RegisterBit<TccrB, 3> {};
+                class Wgm3 : public RegisterBit<TccrB, 4> {};
+                class Ices : public RegisterBit<TccrB, 6> {};
+                class Icnc : public RegisterBit<TccrB, 7> {};
+
+                class Cs : public RegisterBit<TccrB, 0, 3> {};
+
+                class CsValue1;
+                class CsValue2;
+                class CsValue3;
+                class CsValue4;
+                class CsValue5;
+                class CsValue1
+                {
+                    public:
+                        typedef CsValue2 NextValue;
+                        typedef void PrevValue;
+                        enum {key = 1};
+                        enum {prescaler = 1};
+                };
+                class CsValue2
+                {
+                    public:
+                        typedef CsValue3 NextValue;
+                        typedef CsValue1 PrevValue;
+                        enum {key = 2};
+                        enum {prescaler = 8};
+                };
+                class CsValue3
+                {
+                    public:
+                        typedef CsValue4 NextValue;
+                        typedef CsValue2 PrevValue;
+                        enum {key = 3};
+                        enum {prescaler = 64};
+                };
+                class CsValue4
+                {
+                    public:
+                        typedef CsValue5 NextValue;
+                        typedef CsValue3 PrevValue;
+                        enum {key = 4};
+                        enum {prescaler = 256};
+                };
+                class CsValue5
+                {
+                    public:
+                        typedef void NextValue;
+                        typedef CsValue4 PrevValue;
+                        enum {key = 5};
+                        enum {prescaler = 1024};
+                };
+                typedef CsValue1 CsValueFirst;
+                typedef CsValue5 CsValueLast;
+
+                typedef Tccr1C TccrC;
+                class FocC : public RegisterBit<TccrC, 5> {};
+                class FocB : public RegisterBit<TccrC, 6> {};
+                class FocA : public RegisterBit<TccrC, 7> {};
+
+                typedef Tcnt1 Tcnt;
+
+                typedef Ocr1A OcrA;
+                typedef Ocr1B OcrB;
+                typedef Ocr1C OcrC;
+
+                typedef Icr1 Icr;
+
+                typedef Timsk1 Timsk;
+                class Toie  : public RegisterBit<Timsk, 0> {};
+                class OcieA : public RegisterBit<Timsk, 1> {};
+                class OcieB : public RegisterBit<Timsk, 2> {};
+                class OcieC : public RegisterBit<Timsk, 3> {};
+                class Icie  : public RegisterBit<Timsk, 5> {};
+
+                typedef Tifr1 Tifr;
+                class Tov  : public RegisterBit<Tifr, 0> {};
+                class OcfA : public RegisterBit<Tifr, 1> {};
+                class OcfB : public RegisterBit<Tifr, 2> {};
+                class OcfC : public RegisterBit<Tifr, 3> {};
+                class Icf  : public RegisterBit<Tifr, 5> {};
+
+
+                // Overflow Interrupt
+                template<typename Functor>
+                class OverflowInterrupt
+                {
+                    public:
+                        enum {t = 1};
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".timer1_ovf_vector")))
+                               const uint16_t interrupt;
+                };
+
+                // CompA Interrupt
+                template<typename Functor>
+                class CompAInterrupt
+                {
+                    public:
+                        enum {t = 1};
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".timer1_compa_vector")))
+                               const uint16_t interrupt;
+                };
+
+                // CompB Interrupt
+                template<typename Functor>
+                class CompBInterrupt
+                {
+                    public:
+                        enum {t = 1};
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".timer1_compb_vector")))
+                               const uint16_t interrupt;
+                };
+
+                // CompC Interrupt
+                template<typename Functor>
+                class CompCInterrupt
+                {
+                    public:
+                        enum {t = 1};
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".timer1_compc_vector")))
+                               const uint16_t interrupt;
+                };
+
+                // Capture Interrupt
+                template<typename Functor>
+                class CaptInterrupt
+                {
+                    public:
+                        enum {t = 1};
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".timer1_capt_vector")))
+                               const uint16_t interrupt;
+                };
+
+                class OutputCompareUnitA
+                {
+                    public:
+                        typedef ComA0 Com0;
+                        typedef ComA1 Com1;
+                        typedef FocA  Foc;
+                        typedef OcrA  Ocr;
+                        typedef OcieA Ocie;
+                        typedef OcfA  Ocf;
+                        template<typename T>
+                        using Interrupt = CompAInterrupt<T>;
+                };
+
+                class OutputCompareUnitB
+                {
+                    public:
+                        typedef ComB0 Com0;
+                        typedef ComB1 Com1;
+                        typedef FocB  Foc;
+                        typedef OcrB  Ocr;
+                        typedef OcieB Ocie;
+                        typedef OcfB  Ocf;
+                        template<typename T>
+                        using Interrupt = CompBInterrupt<T>;
+                };
+
+                class OutputCompareUnitC
+                {
+                    public:
+                        typedef ComC0 Com0;
+                        typedef ComC1 Com1;
+                        typedef FocC  Foc;
+                        typedef OcrC  Ocr;
+                        typedef OcieC Ocie;
+                        typedef OcfC  Ocf;
+                        template<typename T>
+                        using Interrupt = CompCInterrupt<T>;
+                };
+
+                static inline void setCTCMode()
+                {
+                    RegisterVisitor::clear<Wgm3, Wgm1, Wgm0>();
+                    RegisterVisitor::set<Wgm2>();
+                }
+            };
     };
     template<uint64_t ns>
     template<typename Functor>
@@ -312,6 +529,36 @@ namespace avr
         __attribute__ ((used))
         __attribute__ ((section (".timer0_compb_vector")))
         const uint16_t AT90USB162Mic<ns>::Timer0::CompBInterrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::call);
+    template<uint64_t ns>
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".timer1_ovf_vector")))
+        const uint16_t AT90USB162Mic<ns>::Timer1::OverflowInterrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::call);
+    template<uint64_t ns>
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".timer1_compa_vector")))
+        const uint16_t AT90USB162Mic<ns>::Timer1::CompAInterrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::call);
+    template<uint64_t ns>
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".timer1_compb_vector")))
+        const uint16_t AT90USB162Mic<ns>::Timer1::CompBInterrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::call);
+    template<uint64_t ns>
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".timer1_compc_vector")))
+        const uint16_t AT90USB162Mic<ns>::Timer1::CompCInterrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::call);
+    template<uint64_t ns>
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".timer1_capt_vector")))
+        const uint16_t AT90USB162Mic<ns>::Timer1::CaptInterrupt<Functor>::interrupt
             = (uint16_t)(&Functor::call);
 }
 }

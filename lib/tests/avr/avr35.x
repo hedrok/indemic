@@ -69,6 +69,10 @@ SECTIONS
   .rela.bss      : { *(.rela.bss)		}
   .rel.plt       : { *(.rel.plt)		}
   .rela.plt      : { *(.rela.plt)		}
+
+  /DISCARD/ : {
+      *(.vectors)
+  }
   /* Internal text space or external memory.  */
   .text   :
   {

@@ -20,16 +20,34 @@
  * HelloLed using multi-platform library IndeMic
  */
 
-template<typename Led>
+#include <avr/interrupt.h>
+
+template<typename Led, template<typename F> class PR >
 class HelloLed
 {
 public:
+    class Functor
+    {
+        public:
+            static void call() __attribute((signal))
+            {
+                static uint8_t value = 1;
+                value ^= 1;
+                Led::setValue(value);
+            }
+    };
+    typedef PR<Functor> PRF;
+
     static void main()
     {
         Led::makeOutput();
         Led::setHigh();
-        while (true)
-        {
+        // 1 Hz
+        PRF::template setPeriod<1000000000>();
+        PRF::enable();
+        PRF::clearCounter();
+        sei();
+        while (true) {
         }
     }
 };

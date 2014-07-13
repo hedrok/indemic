@@ -1,5 +1,5 @@
 MMCU=at90usb162
-FLAGS=-mmcu=$(MMCU) -O0
+FLAGS=-mmcu=$(MMCU) -Os -T../../lib/tests/avr/avr35.x
 
 all: out/avrboard-cnc.hex
 
