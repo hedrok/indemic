@@ -119,9 +119,9 @@ def UnitTest(env, target, source = [], **kwargs):
     kwargs["CCFLAGS"]  = ccflags
     test = env.Program(target, source = source, **kwargs)
     if multiget([kwargs, env, os.environ], 'CXXTEST_SKIP_ERRORS', False):
-        runner = env.Action(test[0].abspath, exitstatfunc=lambda x:0)
+        runner = env.Action(test[0].abspath, exitstatfunc=lambda x:0, chdir=os.path.dirname(test[0].abspath))
     else:
-        runner = env.Action(test[0].abspath)
+        runner = env.Action(test[0].abspath, chdir=os.path.dirname(test[0].abspath))
     env.Alias(env['CXXTEST_TARGET'], test, runner)
     env.AlwaysBuild(env['CXXTEST_TARGET'])
     return test
