@@ -1,0 +1,7 @@
+Import('at90usb_env', 'cxxtest_env')
+
+avr_timer_elf = at90usb_env.Program('avr-timer0-at90usb.elf', ['avr-timer0-at90usb.cpp', 'avr-mcu.c'])
+
+test_timer = cxxtest_env.CxxTest('test_timer', ['PeriodicRunnerTest.h'])
+
+Depends(test_timer, avr_timer_elf)

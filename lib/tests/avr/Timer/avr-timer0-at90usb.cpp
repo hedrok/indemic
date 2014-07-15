@@ -2,7 +2,7 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
-#ifdef USE_INDEMIC
+#ifndef DONT_USE_INDEMIC
 #include <indemic/avr/products.h>
 #include <indemic/avr/PeriodicRunner.h>
 
@@ -38,7 +38,7 @@ int main()
     DDRC |= 1;
     PORTC &= ~1;
 
-#ifdef USE_INDEMIC
+#ifndef DONT_USE_INDEMIC
     MyRunner<Functor>::setPeriod<1000000>();
     MyRunner<Functor>::enable();
     MyRunner<Functor>::clearCounter();

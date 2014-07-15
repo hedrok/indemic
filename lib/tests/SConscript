@@ -1,0 +1,4 @@
+SConscript([ \
+    'avr/SConscript', \
+    'generic/SConscript', \
+])

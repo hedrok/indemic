@@ -1,0 +1,11 @@
+Import('cxxtest_env')
+
+test_register = cxxtest_env.CxxTest(
+    'test_register',
+    [
+        'RegisterTest.h',
+        'RegisterMultiSetterTest.h',
+        'RegisterVisitorTest.h',
+        'RegisterDoubleTest.h',
+    ]
+)

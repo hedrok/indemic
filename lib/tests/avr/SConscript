@@ -1,0 +1,5 @@
+SConscript([ \
+    'ExternalInterrupt/SConscript', \
+    'IOPin/SConscript', \
+    'Timer/SConscript', \
+])

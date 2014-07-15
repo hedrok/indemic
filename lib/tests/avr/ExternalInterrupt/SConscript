@@ -1,0 +1,6 @@
+Import('at90usb_env', 'cxxtest_env')
+
+avr_extint_elf = at90usb_env.Program('avr-external-at90usb.elf', ['avr-external-at90usb.cpp', 'avr-mcu.c'])
+
+test_extint = cxxtest_env.CxxTest('test_extint', ['ExternalInterruptTest.h'])
+Depends(test_extint, avr_extint_elf)
