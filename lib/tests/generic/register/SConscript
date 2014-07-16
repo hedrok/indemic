@@ -3,9 +3,9 @@ Import('cxxtest_env')
 test_register = cxxtest_env.CxxTest(
     'test_register',
     [
-        'RegisterTest.h',
-        'RegisterMultiSetterTest.h',
-        'RegisterVisitorTest.h',
-        'RegisterDoubleTest.h',
+        'RegisterTest.t.h',
+        'RegisterMultiSetterTest.t.h',
+        'RegisterVisitorTest.t.h',
+        'RegisterDoubleTest.t.h',
     ]
 )

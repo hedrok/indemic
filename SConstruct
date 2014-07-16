@@ -15,9 +15,8 @@ at90usb_env.ParseConfig("pkg-config simavr --cflags")
 
 cxxtest_env = Environment(
     tools = ['default','cxxtest'],
-    CXXTEST_CPPPATH = ['#/lib'],
+    CPPPATH = ['#/lib'],
     CXXFLAGS = '-std=c++11',
-    LINKFLAGS = ('-std=c++11 -I' + Dir('.').abspath + '/lib'),
 )
 cxxtest_env.ParseConfig("pkg-config simavr --cflags --libs")
 
