@@ -1,4 +1,25 @@
+Import('cxxtest_env')
+
+tests_src = [
+    'avr/ExternalInterrupt/ExternalInterruptTest.t.h',
+    'avr/Timer/PeriodicRunnerTest.t.h',
+    'avr/IOPin/IOPinTest.t.h',
+    'generic/register/RegisterTest.t.h',
+    'generic/register/RegisterMultiSetterTest.t.h',
+    'generic/register/RegisterVisitorTest.t.h',
+    'generic/register/RegisterDoubleTest.t.h',
+]
+libtest_node = cxxtest_env.CxxTest('test_lib', tests_src)
+
+Export('libtest_node')
+
 SConscript([ \
     'avr/SConscript', \
     'generic/SConscript', \
+])
+
+SConscript([ \
+    'ExternalInterrupt/SConscript', \
+    'IOPin/SConscript', \
+    'Timer/SConscript', \
 ])

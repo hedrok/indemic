@@ -1,11 +1,4 @@
-Import('cxxtest_env')
-
-test_register = cxxtest_env.CxxTest(
-    'test_register',
-    [
-        'RegisterTest.t.h',
-        'RegisterMultiSetterTest.t.h',
-        'RegisterVisitorTest.t.h',
-        'RegisterDoubleTest.t.h',
-    ]
-)
+# TODO: check that following files compile with errors:
+# RegisterCompileErrorWidthCheckConstructorTest.cpp
+# RegisterCompileErrorWidthCheckOperatorTest.cpp
+# RegisterCompileErrorWrongRegisterTest.cpp
