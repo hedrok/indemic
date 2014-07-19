@@ -1,4 +1,25 @@
-# TODO: check that following files compile with errors:
-# RegisterCompileErrorWidthCheckConstructorTest.cpp
-# RegisterCompileErrorWidthCheckOperatorTest.cpp
-# RegisterCompileErrorWrongRegisterTest.cpp
+Import('cxxtest_env')
+
+# Checking files that should not compile
+fail_sources = [
+    'RegisterCompileErrorWidthCheckConstructorTest.cpp',
+    'RegisterCompileErrorWidthCheckOperatorTest.cpp',
+    'RegisterCompileErrorWrongRegisterTest.cpp',
+]
+
+cxxtest_env.Library('should_compile', fail_sources)
+
+fail_env  = cxxtest_env.Clone()
+fail_env.Append(CCFLAGS = ['-DFAIL_COMPILATION'])
+fail_conf = Configure(fail_env)
+
+for f in fail_sources:
+    path = File(f).srcnode().abspath
+    source = open(path).read(100000)
+    result_fail = fail_conf.TryCompile(source, '.cpp')
+    if result_fail == 1:
+        print "FAIL: " + f + " should not be compilable, but it compiled."
+        Exit(1)
+    else:
+        print "OK: " + f
+fail_conf.Finish()

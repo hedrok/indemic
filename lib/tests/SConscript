@@ -17,9 +17,3 @@ SConscript([ \
     'avr/SConscript', \
     'generic/SConscript', \
 ])
-
-SConscript([ \
-    'ExternalInterrupt/SConscript', \
-    'IOPin/SConscript', \
-    'Timer/SConscript', \
-])
