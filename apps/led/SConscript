@@ -1,0 +1,3 @@
+Import('indemicBoard')
+
+indemicBoard('cnc.at90usb162.avr.elf', 'boards/cnc.at90usb162.avr.cpp')

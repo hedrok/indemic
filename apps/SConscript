@@ -1,0 +1,5 @@
+SConscript(
+    ['led/SConscript'],
+    variant_dir='led/_build',
+    duplicate=0,
+)
