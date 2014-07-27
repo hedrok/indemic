@@ -72,7 +72,7 @@ class ExternalInterruptTestSuite : public CxxTest::TestSuite
             this->portExpected.push_back(0x0);
             this->portExpected.push_back(0x1);
 
-            runTest("avr/ExternalInterrupt/avr-external-at90usb.elf", 100);
+            runTest("avr/ExternalInterrupt/external.at90usb162.avr.elf", 100);
         }
     private:
         uint8_t portState;
