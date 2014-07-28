@@ -1,4 +1,7 @@
-Import('indemicBoardSimAvr', 'libtest_node')
+Import('indemic_env', 'libtest_node')
 
-avr_timer_elf = indemicBoardSimAvr('timer0.at90usb162.avr.elf', ['avr-timer0-at90usb.cpp', 'avr-mcu.c'])
+avr_timer_elf = indemic_env.indemicBoardSimAvr(
+    'timer0.at90usb162.avr.elf',
+    ['avr-timer0-at90usb.cpp', 'avr-mcu.c'],
+)
 Depends(libtest_node, avr_timer_elf)

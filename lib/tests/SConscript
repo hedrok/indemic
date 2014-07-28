@@ -1,13 +1,4 @@
-Import('cxxtest_env', 'indemicBoard', 'avr_env', 'IndemicBoardBuilder')
-
-avr_sim_env = avr_env.Clone()
-avr_sim_env.ParseConfig("pkg-config simavr --cflags")
-
-Export('avr_sim_env')
-
-indemicBoardSimAvr = IndemicBoardBuilder({'avr': avr_sim_env})
-
-Export('indemicBoardSimAvr')
+Import('cxxtest_env')
 
 tests_src = [
     'avr/ExternalInterrupt/ExternalInterruptTest.t.h',

@@ -1,4 +1,7 @@
-Import('indemicBoardSimAvr', 'libtest_node')
+Import('indemic_env', 'libtest_node')
 
-avr_extint_elf = indemicBoardSimAvr('external.at90usb162.avr.elf', ['avr-external-at90usb.cpp', 'avr-mcu.c'])
+avr_extint_elf = indemic_env.indemicBoardSimAvr(
+    'external.at90usb162.avr.elf',
+    ['avr-external-at90usb.cpp', 'avr-mcu.c'],
+)
 Depends(libtest_node, avr_extint_elf)
