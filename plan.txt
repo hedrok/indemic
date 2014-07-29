@@ -20,7 +20,9 @@
 *014 Build system
    +015 Move all building process to Scons
    +016 Tests of failed compilation
-   -017 Selecting mcu by special text file, build for all of them
+   +017 Selecting mcu by target name, autogenerate linker script for it
+   -023 Generate hex and asm files from elf
+   -024 Make flashing comfortable
    -018 Check if AVR toolchain is available, avr libc is available
 -020 STM32 implementation
     -021 IOPin for STM32F4
