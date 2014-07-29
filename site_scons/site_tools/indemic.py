@@ -29,8 +29,6 @@ class ToolIndeMicWarning(SCons.Warnings.Warning):
 
 SCons.Warnings.enableWarningClass(ToolIndeMicWarning)
 
-#        SCons.Warnings.warn(ToolCxxTestWarning,
-#                            "Invalid CXXTEST environment variable specified!")
 class LinkerScriptBuilder:
     """
     Class for 'building' linker scripts.
@@ -58,7 +56,10 @@ class LinkerScriptBuilder:
         linkerScript = '';
         with open(path) as verboseOutput:
             if not verboseOutput:
-                print("Could not open temp file with linker script information: " + path)
+                SCons.Warnings.warn(
+                    ToolIndeMicWarning,
+                    "Could not open temp file with linker script information: " + path
+                )
                 Exit(1)
             state = 'before'
             for line in verboseOutput:
@@ -91,7 +92,10 @@ class LinkerScriptBuilder:
             dictfile = File(ldscriptspath + '/' + architecture + '/dict')
             with open(dictfile.abspath) as df:
                 if not df:
-                    print("Could not opent file: " + dictfile.abspath)
+                    SCons.Warnings.warn(
+                            ToolIndeMicWarning,
+                            "Could not opent file: " + dictfile.abspath
+                    )
                     Exit(1)
                 for line in df:
                     if line[0] == '#':
@@ -100,19 +104,28 @@ class LinkerScriptBuilder:
                         continue
                     parts = line.split()
                     if len(parts) > 2:
-                        print("Wrong dict format: '" + line + "' in file " + dictfile.abspath)
+                        SCons.Warnings.warn(
+                            ToolIndeMicWarning,
+                            "Wrong dict format: '" + line + "' in file " + dictfile.abspath
+                        )
                         Exit(1)
                     fpm[parts[0]] = parts[1]
             self.filepathByMicro[architecture] = fpm
         if micro not in self.filepathByMicro[architecture]:
-            print("Unknown microcontroller '" + micro + "' for architecture '" + architecture + "'")
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "Unknown microcontroller '" + micro + "' for architecture '" + architecture + "'"
+            )
             Exit(1)
         filename = self.filepathByMicro[architecture][micro] + '.interrupts'
         intFile = File(ldscriptspath + '/' + architecture + '/' + filename)
         content = ''
         with open(intFile.abspath) as f:
             if not f:
-                print("Could not open file: " + intFile.abspath)
+                SCons.Warnings.warn(
+                    ToolIndeMicWarning,
+                    "Could not open file: " + intFile.abspath
+                )
                 Exit(1)
             content = f.read(10000)
         return content.split()
@@ -173,9 +186,12 @@ class LinkerScriptBuilder:
 
         parts = target[0].abspath.split('/')
         if len(parts) < 3:
-            print("buildLinkerScript requires target to have filename name.micro.arch.x")
-            print("                  e.g. avr/at90usb162.x")
-            print("Got filename: " + target[0].abspath)
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                  "buildLinkerScript requires target to have filename name.micro.arch.x\n"
+                + "                  e.g. avr/at90usb162.x\n"
+                + "Got filename: " + target[0].abspath
+            )
             Exit(1)
 
         architecture = parts[-2] # e.g. avr
@@ -188,14 +204,20 @@ class LinkerScriptBuilder:
         # avr-gcc -Wl,--verbose -mmcu=MCU /tmp/dummy.c
         getLinkerScriptCmd = 'avr-gcc -Wl,--verbose -mmcu=' +  micro + ' ' + dummy[0].abspath + ' -o ' + dummy[0].abspath + '.out > ' + tmpfile.abspath
         if env.Execute(getLinkerScriptCmd):
-            print("Failed to execute: '" + getLinkerScriptCmd + "'") 
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "Failed to execute: '" + getLinkerScriptCmd + "'"
+            )
             Exit(1)
         linkerScript = self._getLinkerScriptFromOutput(tmpfile.abspath)
         interrupts = self._getInterruptsByMicro(architecture, micro)
         patchedStr = self._patchLinkerScript(linkerScript, interrupts)
         with open(target[0].abspath, 'w') as f:
             if not f:
-                print("Could not open file '" + target[0].abspath + "' for writing")
+                SCons.Warnings.warn(
+                    ToolIndeMicWarning,
+                    "Could not open file '" + target[0].abspath + "' for writing"
+                )
                 Exit(1)
             f.write(patchedStr)
 
@@ -208,7 +230,10 @@ class LinkerScriptBuilder:
         @returns Path to linker script generated for this micro
         """
         if architecture != 'avr':
-            print("Currently only avr architecture is supported")
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "Currently only avr architecture is supported"
+            )
             Exit(1)
         path = File('#_build/' + architecture + '/' + micro + '.x').abspath
         return path
@@ -258,16 +283,22 @@ class IndemicBoardBuilder:
         target = Flatten(Split(target))
         parts = target[0].split('.')
         if len(parts) < 3:
-            print("buildIndemicBoard requires target to have filename name.micro.arch.elf")
-            print("                  e.g. some.at90usb162.avr.elf")
-            print("Got filename: " + target)
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "buildIndemicBoard requires target to have filename name.micro.arch.elf\n"
+                "                  e.g. some.at90usb162.avr.elf\n"
+                "Got filename: " + target
+            )
             Exit(1)
 
         architecture = parts[-2] # e.g. avr
         micro = parts[-3]        # e.g. at90usb162
 
         if architecture not in self.envByArch:
-            print("Architecture " + architecture + " is unknown.")
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "Architecture " + architecture + " is unknown."
+            )
             Exit(1)
         if micro not in self.envByMicro[architecture]:
             self._initMicro(architecture, micro)
