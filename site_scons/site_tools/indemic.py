@@ -303,8 +303,12 @@ class IndemicBoardBuilder:
         if micro not in self.envByMicro[architecture]:
             self._initMicro(architecture, micro)
         
-        prog = self.envByMicro[architecture][micro].Program(target, sources)
+        avrEnv = self.envByMicro[architecture][micro]
+        prog = avrEnv.Program(target, sources)
+        avrEnv.Hex(prog)
+        avrEnv.Asm(prog)
         Depends(prog, self.linkerBuilder.getNode(architecture, micro))
+
         return prog
 
     def _initMicro(self, architecture, micro):
@@ -336,6 +340,18 @@ def generate(env, **kwargs):
         CXXFLAGS = '-std=c++11',
         CCFLAGS = '-Os -Wall',
         ENV = {'PATH' : os.environ['PATH']},
+        BUILDERS = {
+            'Hex' : Builder(
+                action = 'avr-objcopy -j .text -j .data -O ihex $SOURCE $TARGET',
+                suffix = '.hex',
+                src_suffix = '.elf',
+            ),
+            'Asm' : Builder(
+                action = 'avr-objdump -d $SOURCE > $TARGET',
+                suffix = '.s',
+                src_suffix = '.elf',
+            ),
+        }
     )
     indemicBoard = IndemicBoardBuilder({'avr': avr_env})
 
