@@ -25,6 +25,12 @@
 #include <indemic/generic/RegisterBit.h>
 #include <indemic/generic/RegisterVisitor.h>
 
+// This macro seems required to me. There are different names
+// and different attributes for different architectures, so
+// application can not just use some name like call.
+#define INDEMIC_INTERRUPT_FUNCTION_NAME __vector_1
+#define INDEMIC_INTERRUPT_FUNCTION static void __vector_1() __attribute__((signal))
+
 namespace IndeMic
 {
 namespace avr
@@ -499,67 +505,67 @@ namespace avr
         __attribute__ ((used))
         __attribute__ ((section (".int0_vector")))
         const uint16_t AT90USB162Mic<ns>::Int0::Interrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".int1_vector")))
         const uint16_t AT90USB162Mic<ns>::Int1::Interrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".int2_vector")))
         const uint16_t AT90USB162Mic<ns>::Int2::Interrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".timer0_ovf_vector")))
         const uint16_t AT90USB162Mic<ns>::Timer0::OverflowInterrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".timer0_compa_vector")))
         const uint16_t AT90USB162Mic<ns>::Timer0::CompAInterrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".timer0_compb_vector")))
         const uint16_t AT90USB162Mic<ns>::Timer0::CompBInterrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".timer1_ovf_vector")))
         const uint16_t AT90USB162Mic<ns>::Timer1::OverflowInterrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".timer1_compa_vector")))
         const uint16_t AT90USB162Mic<ns>::Timer1::CompAInterrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".timer1_compb_vector")))
         const uint16_t AT90USB162Mic<ns>::Timer1::CompBInterrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".timer1_compc_vector")))
         const uint16_t AT90USB162Mic<ns>::Timer1::CompCInterrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
         __attribute__ ((section (".timer1_capt_vector")))
         const uint16_t AT90USB162Mic<ns>::Timer1::CaptInterrupt<Functor>::interrupt
-            = (uint16_t)(&Functor::call);
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
 }
 }
 
