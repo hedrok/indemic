@@ -21,7 +21,7 @@ class MyRunner : public PeriodicRunner<M, M::Timer0, F> {};
 class Functor
 {
     public:
-        static void call() __attribute__ ((signal))
+        INDEMIC_INTERRUPT_FUNCTION
         {
             PORTC ^= 1;
         }

@@ -15,7 +15,7 @@ ISR(INT2_vect)
 class Functor
 {
     public:
-        static inline void call()
+        INDEMIC_INTERRUPT_FUNCTION
         {
             PORTC |= 1;
         }

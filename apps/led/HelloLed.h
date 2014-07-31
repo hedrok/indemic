@@ -29,7 +29,7 @@ public:
     class Functor
     {
         public:
-            static void call() __attribute((signal))
+            INDEMIC_INTERRUPT_FUNCTION
             {
                 static uint8_t value = 1;
                 value ^= 1;
