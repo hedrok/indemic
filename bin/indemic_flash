@@ -1,0 +1,120 @@
+#!/bin/python
+
+import sys
+import os
+import re
+
+def searchHexes(dirs):
+    """
+    Searches directories for files of *.*.*.hex name
+    @param dirs List of directories to search in
+    @returns list of filenames
+    """
+    p = re.compile('.*\.[^.]*\.[^.]*.hex')
+    lst = []
+    for d in dirs:
+        if not os.path.isdir(d):
+            continue
+        l = os.listdir(d)
+        for i in l:
+            lst.append(d + '/' + i)
+
+    return [i for i in lst if p.match(i)]
+
+def filterListByPattern(lst, pattern):
+    """
+    Filters list by pattern
+    @param lst Input list
+    @param pattern Match this string
+    @returns List of items of lst that have
+             pattern as substring
+    """
+    return [i for i in lst if i.find(pattern) != -1]
+
+#avrdude -c avrftdi -pusb162 -U flash:w:out/avrboard-cnc.hex
+def flashAvr(micro, filename):
+    """
+    Flashes AVR microcontroller
+    @param micro Microcontroller name understood by GCC
+    @param filename Path to hex file to flash
+    @returns True on success
+    """
+    if not hasattr(flashAvr, 'microDict'):
+        d = {}
+        f = os.popen("avrdude -cavrftdi 2>&1")
+        for line in f:
+            if line.find('=') == -1:
+                continue
+            parts = line.split('=')
+            if len(parts) != 2:
+                continue
+            m = parts[1].strip().lower()
+            code = parts[0].strip()
+            d[m] = code
+        f.close()
+        flashAvr.microDict = d
+
+    if micro not in flashAvr.microDict:
+        print("Unknown microcontroller: " + micro + " for avrdude")
+        return False
+
+    command = "avrdude -cavrftdi -p" + flashAvr.microDict[micro] + " -U flash:w:" + filename
+    print "Executing '" + command + "'"
+    os.execvp("avrdude", ['avrdude', '-cavrftdi', '-p', flashAvr.microDict[micro], '-U', 'flash:w:' + filename])
+    return True
+
+def flashHex(filename):
+    """
+    Flash hex file to microcontroller
+    @param filename
+    @returns True on success
+    """
+    parts = filename.split('/')
+    parts = parts[-1].split('.')
+    # name.micro.architecture.hex
+    if len(parts) < 4:
+        print("Wrong filename. Should be name.architecture.micro.hex")
+        return False
+    architecture = parts[-2]
+    micro = parts[-3]
+    if architecture != 'avr':
+        print("Unsupported architecture: " + architecture)
+        return False
+
+    return flashAvr(micro, filename)
+
+if len(sys.argv) > 2:
+    print("Usage: indemic_flash [part_of_filename]")
+    print("       File will be searched in current directory and in")
+    print("       _build directory. Only *.*.*.hex files are considered")
+    sys.exit(1)
+
+dirs = ['.', '_build']
+arg = None
+trytoflash = None
+pattern = None
+
+if len(sys.argv) == 2:
+    arg = sys.argv[1]
+    if os.path.isfile(arg):
+        trytoflash = arg
+    elif os.path.isdir(arg):
+        dirs.append(arg)
+    else:
+        pattern = arg
+
+if trytoflash is None:
+    listOfHex = searchHexes(dirs)
+    if pattern:
+        listOfHex = filterListByPattern(listOfHex, pattern)
+    if len(listOfHex) == 0:
+        print("Found nothing matching.")
+        sys.exit(1)
+    if len(listOfHex) > 1:
+        print("Too many matches: ")
+        for l in listOfHex:
+            print("\t" + l)
+        sys.exit(1)
+    trytoflash = listOfHex[0]
+
+flashHex(trytoflash)
