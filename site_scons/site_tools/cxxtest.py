@@ -352,5 +352,9 @@ def generate(env, **kwargs):
     env.Append( BUILDERS = { "CxxTest" : CxxTest, "CxxTestCpp" : cxxtest_builder } )
 
 def exists(env):
+    if 'CXXTEST' not in env:
+        return False
+    if env['CXXTEST'] is None:
+        return False
     return os.path.exists(env['CXXTEST'])
 

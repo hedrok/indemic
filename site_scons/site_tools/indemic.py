@@ -354,16 +354,31 @@ def generate(env, **kwargs):
         }
     )
     indemicBoard = IndemicBoardBuilder({'avr': avr_env})
+    builders = {'indemicBoard' : indemicBoard}
 
-    avr_sim_env = avr_env.Clone()
-    avr_sim_env.ParseConfig("pkg-config simavr --cflags")
-    indemicBoardSimAvr = IndemicBoardBuilder({'avr': avr_sim_env})
+
+    def CheckPKG(context, name):
+         context.Message( 'Checking for %s... ' % name )
+         ret = context.TryAction('pkg-config --exists \'%s\'' % name)[0]
+         context.Result( ret )
+         return ret
+
+    e = Environment()
+    conf = Configure(e, custom_tests = {'CheckPKG' : CheckPKG })
+
+    have_simavr = False
+    if conf.CheckPKG('simavr'):
+        have_simavr = True
+    conf.Finish()
+
+    if have_simavr:
+        avr_sim_env = avr_env.Clone()
+        avr_sim_env.ParseConfig("pkg-config simavr --cflags")
+        indemicBoardSimAvr = IndemicBoardBuilder({'avr': avr_sim_env})
+        builders['indemicBoardSimAvr'] = indemicBoardSimAvr
 
     env.Append(
-        BUILDERS = {
-            "indemicBoard" : indemicBoard,
-            "indemicBoardSimAvr" : indemicBoardSimAvr,
-        }
+        BUILDERS = builders,
     )
 
 def exists(env):

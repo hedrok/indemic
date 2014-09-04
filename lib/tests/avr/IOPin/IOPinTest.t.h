@@ -114,7 +114,7 @@ class IOPinTestSuite : public CxxTest::TestSuite
             // setting 1 to low using setValue
             this->portExpected.push_back(0x0);
 
-            runTest("avr/IOPin/output.at90usb162.avr.elf", 100);
+            runTest("IOPin/output.at90usb162.avr.elf", 100);
         }
 
         /**
@@ -137,7 +137,7 @@ class IOPinTestSuite : public CxxTest::TestSuite
             // Then set 1 to input
             this->ddrExpected.push_back(0x0);
 
-            runTest("avr/IOPin/ddr.at90usb162.avr.elf", 100);
+            runTest("IOPin/ddr.at90usb162.avr.elf", 100);
         }
 
     private:
