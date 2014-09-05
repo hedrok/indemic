@@ -267,7 +267,9 @@ class IndemicBoardBuilder:
         self.envByArch = {}
         self.envByMicro = {}
         for envkey in initialArchitecturesDict:
-            self.envByArch[envkey] = initialArchitecturesDict[envkey].Clone()
+            self.envByArch[envkey] = initialArchitecturesDict[envkey]
+            if self.envByArch[envkey]:
+                self.envByArch[envkey] = self.envByArch[envkey].Clone()
             self.envByMicro[envkey] = {}
 
     def __call__(self, env, target, sources = None):
@@ -287,7 +289,7 @@ class IndemicBoardBuilder:
                 ToolIndeMicWarning,
                 "buildIndemicBoard requires target to have filename name.micro.arch.elf\n"
                 "                  e.g. some.at90usb162.avr.elf\n"
-                "Got filename: " + target
+                "Got filename: " + target[0]
             )
             Exit(1)
 
@@ -300,6 +302,15 @@ class IndemicBoardBuilder:
                 "Architecture " + architecture + " is unknown."
             )
             Exit(1)
+
+        if not self.envByArch[architecture]:
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "Skipping target '" + target[0] + "' as AVR architecture is unavailable.\n"
+                "Check for avr-gcc in your path\n"
+            )
+            return None
+
         if micro not in self.envByMicro[architecture]:
             self._initMicro(architecture, micro)
         
@@ -321,7 +332,10 @@ class IndemicBoardBuilder:
         @param micro e.g. at90usb162
         """
         mcustring = ' -mmcu=' + micro
-        env = self.envByArch[architecture].Clone()
+        env = self.envByArch[architecture]
+        if not env:
+            return None
+        env = env.Clone()
         env.Append(
             CCFLAGS = mcustring,
             LINKFLAGS = mcustring + ' -T' + self.linkerBuilder.getNode(architecture, micro)[0].abspath
@@ -333,6 +347,10 @@ def generate(env, **kwargs):
     Append builders to environment
     TODO: remove hardcoded path to indemic library
     """
+    d = {}
+    builders = {}
+
+    # AVR
     avr_env = Environment(
         CC='avr-gcc',
         CXX='avr-g++',
@@ -353,30 +371,30 @@ def generate(env, **kwargs):
             ),
         }
     )
-    indemicBoard = IndemicBoardBuilder({'avr': avr_env})
-    builders = {'indemicBoard' : indemicBoard}
-
-
     def CheckPKG(context, name):
          context.Message( 'Checking for %s... ' % name )
          ret = context.TryAction('pkg-config --exists \'%s\'' % name)[0]
          context.Result( ret )
          return ret
+    avr_conf = Configure(avr_env, custom_tests = {'CheckPKG' : CheckPKG})
 
-    e = Environment()
-    conf = Configure(e, custom_tests = {'CheckPKG' : CheckPKG })
+    if not avr_conf.CheckCC():
+        avr_env = False
+    if avr_env:
+        have_simavr = False
+        if avr_conf.CheckPKG('simavr'):
+            have_simavr = True
 
-    have_simavr = False
-    if conf.CheckPKG('simavr'):
-        have_simavr = True
-    conf.Finish()
+        if have_simavr:
+            avr_sim_env = avr_env.Clone()
+            avr_sim_env.ParseConfig("pkg-config simavr --cflags")
+            indemicBoardSimAvr = IndemicBoardBuilder({'avr': avr_sim_env})
+            builders['indemicBoardSimAvr'] = indemicBoardSimAvr
+    d['avr'] = avr_env
+    avr_conf.Finish()
 
-    if have_simavr:
-        avr_sim_env = avr_env.Clone()
-        avr_sim_env.ParseConfig("pkg-config simavr --cflags")
-        indemicBoardSimAvr = IndemicBoardBuilder({'avr': avr_sim_env})
-        builders['indemicBoardSimAvr'] = indemicBoardSimAvr
-
+    indemicBoard = IndemicBoardBuilder(d)
+    builders['indemicBoard'] = indemicBoard
     env.Append(
         BUILDERS = builders,
     )
