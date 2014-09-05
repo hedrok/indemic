@@ -74,7 +74,7 @@ class PeriodicRunnerTestSuite : public CxxTest::TestSuite
          */
         void testTimer0AT90USB()
         {
-            runTest("avr-timer0-at90usb.elf", 1000);
+            runTest("Timer/timer0.at90usb162.avr.elf", 1000);
         }
 
     private:

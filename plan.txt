@@ -17,11 +17,15 @@
     -012 Calculate parameters at runtime
     -013 PWM options for one pin
     +014 Timer1 (16-bit) for AT90USB
--014 Build system
-   -015 Move all building process to Scons
-   -016 Tests of failed compilation
-   -017 Selecting mcu by special text file, build for all of them
-   -018 Check if AVR toolchain is available, avr libc is available
+    -025 Make use of user-defined literals for nanoseconds etc
++014 Build system
+   +015 Move all building process to Scons
+   +016 Tests of failed compilation
+   +017 Selecting mcu by target name, autogenerate linker script for it
+   +023 Generate hex and asm files from elf
+   +024 Make flashing comfortable
+   +018 Check if AVR toolchain is available, avr libc is available
+        cxxtest and SimAvr
 -020 STM32 implementation
     -021 IOPin for STM32F4
     -022 PeriodicRunner for STM32F4

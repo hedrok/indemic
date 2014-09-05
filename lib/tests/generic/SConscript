@@ -1,0 +1,13 @@
+Import('cxxtest_env')
+
+tests_src = [
+    'register/RegisterTest.t.h',
+    'register/RegisterMultiSetterTest.t.h',
+    'register/RegisterVisitorTest.t.h',
+    'register/RegisterDoubleTest.t.h',
+]
+cxxtest_env.CxxTest('test_generic', tests_src)
+
+SConscript([ \
+    'register/SConscript', \
+])

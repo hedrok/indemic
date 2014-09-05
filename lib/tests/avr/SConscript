@@ -1,0 +1,22 @@
+Import('indemic_env', 'cxxtest_env')
+
+if not hasattr(indemic_env, 'indemicBoardSimAvr'):
+    print("Skipping AVR tests: simavr not found")
+else:
+    avr_cxxtest_env = cxxtest_env.Clone()
+    avr_cxxtest_env.ParseConfig("pkg-config simavr --cflags --libs")
+
+    tests_src = [
+        'ExternalInterrupt/ExternalInterruptTest.t.h',
+        'Timer/PeriodicRunnerTest.t.h',
+        'IOPin/IOPinTest.t.h',
+    ]
+    avrtest_node = avr_cxxtest_env.CxxTest('test_avr', tests_src)
+
+    Export('avrtest_node', 'avr_cxxtest_env')
+
+    SConscript([ \
+        'ExternalInterrupt/SConscript', \
+        'IOPin/SConscript', \
+        'Timer/SConscript', \
+    ])
