@@ -1,14 +1,6 @@
 #include <cxxtest/TestSuite.h>
 #include <indemic/generic/Register.h>
 
-namespace
-{
-static uint8_t doublepseudoregister1;
-static uint8_t doublepseudoregister2;
-constexpr uint64_t daddress1 = 0x618ec9;
-constexpr uint64_t daddress2 = daddress1 + 1;
-}
-
 class DoubleTestMicrocontroller
 {
     public:
@@ -18,9 +10,16 @@ class DoubleTestMicrocontroller
         typedef uint16_t register_double_value_t;
 };
 
-class TestRegister : public IndeMic::RegisterDoubleSettable<DoubleTestMicrocontroller, daddress1, TestRegister>
+class TestRegister : public IndeMic::RegisterDoubleSettable<DoubleTestMicrocontroller, 0, TestRegister>
 {
+    public:
+        static inline DoubleTestMicrocontroller::register_double_t& reg()
+        {
+            return value;
+        }
+        static uint16_t value;
 };
+uint16_t TestRegister::value;
 
 class RegisterDoubleTestSuite : public CxxTest::TestSuite
 {
@@ -30,20 +29,7 @@ class RegisterDoubleTestSuite : public CxxTest::TestSuite
          */
         void testDoubleRegister()
         {
-            doublepseudoregister1 = 0;
-            doublepseudoregister2 = 0;
-            if (daddress1 != reinterpret_cast<uint64_t>(&doublepseudoregister1)) {
-                printf("&doublepseudoregister1: %lx, skipping test\n", reinterpret_cast<uint64_t>(&doublepseudoregister1));
-                TS_SKIP("Skipped because of hardcoded variable daddress");
-                return;
-            }
-            if (daddress2 != reinterpret_cast<uint64_t>(&doublepseudoregister2)) {
-                printf("&doublepseudoregister2: %lx, skipping test\n", reinterpret_cast<uint64_t>(&doublepseudoregister2));
-                TS_SKIP("Skipped because of hardcoded variable daddress");
-                return;
-            }
             TestRegister::assign(0xf00f);
-            TS_ASSERT_EQUALS(doublepseudoregister1, 0x0f);
-            TS_ASSERT_EQUALS(doublepseudoregister2, 0xf0);
+            TS_ASSERT_EQUALS(TestRegister::value, 0xf00f);
         }
 };

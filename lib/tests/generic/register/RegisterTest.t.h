@@ -3,9 +3,6 @@
 #include <indemic/generic/RegisterBit.h>
 #include <indemic/generic/RegisterValue.h>
 
-static uint8_t pseudoregister;
-constexpr uint64_t address = 0x618c89;
-
 class TestMicrocontroller
 {
     public:
@@ -13,7 +10,7 @@ class TestMicrocontroller
         typedef uint8_t register_value_t;
 };
 
-class TCCR0A : public IndeMic::RegisterBase<TestMicrocontroller, address, TCCR0A>
+class TCCR0A : public IndeMic::RegisterBase<TestMicrocontroller, 0, TCCR0A>
 {
     public:
         constexpr static auto COM0A1 = IndeMic::RegisterBit<TCCR0A, 7>();
@@ -24,7 +21,14 @@ class TCCR0A : public IndeMic::RegisterBase<TestMicrocontroller, address, TCCR0A
         constexpr static auto WGM00  = IndeMic::RegisterBit<TCCR0A, 0>();
 
         constexpr static auto WGM0   = IndeMic::RegisterBit<TCCR0A, 0, 2>();
+
+        static inline TestMicrocontroller::register_t& reg()
+        {
+            return value;
+        }
+        static uint8_t value;
 };
+uint8_t TCCR0A::value = 0;
 
 constexpr IndeMic::RegisterBit<TCCR0A, 7> TCCR0A::COM0A1;
 constexpr IndeMic::RegisterBit<TCCR0A, 6> TCCR0A::COM0A0;
@@ -43,12 +47,7 @@ class RegisterTestSuite : public CxxTest::TestSuite
          */
         void testOutput()
         {
-            pseudoregister = 0;
-            if (address != reinterpret_cast<uint64_t>(&pseudoregister)) {
-                printf("&pseudoregister: %lx, skipping test\n", reinterpret_cast<uint64_t>(&pseudoregister));
-                TS_SKIP("Skipped because of hardcoded variable address");
-                return;
-            }
+            uint8_t &pseudoregister = TCCR0A::value;
             constexpr IndeMic::RegisterValue<TCCR0A> v = TCCR0A::COM0A1 | TCCR0A::COM0B0 | TCCR0A::WGM00;
             TCCR0A::set(v);
             TS_ASSERT_EQUALS(pseudoregister, 0x91);
