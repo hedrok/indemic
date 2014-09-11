@@ -28,6 +28,7 @@ class ToolIndeMicWarning(SCons.Warnings.Warning):
     pass
 
 SCons.Warnings.enableWarningClass(ToolIndeMicWarning)
+libopencm3_root = '/opt/libopencm3'
 
 class LinkerScriptBuilder:
     """
@@ -318,7 +319,8 @@ class IndemicBoardBuilder:
         prog = avrEnv.Program(target, sources)
         avrEnv.Hex(prog)
         avrEnv.Asm(prog)
-        Depends(prog, self.linkerBuilder.getNode(architecture, micro))
+        if architecture == 'avr':
+            Depends(prog, self.linkerBuilder.getNode(architecture, micro))
 
         return prog
 
@@ -331,14 +333,33 @@ class IndemicBoardBuilder:
         @param architecture e.g. avr
         @param micro e.g. at90usb162
         """
-        mcustring = ' -mmcu=' + micro
+        cflags = ''
+        ldflags = ''
+        libs = []
+        if architecture == 'stm32':
+            if micro[:7] == 'stm32f4':
+                cflags = '-DSTM32F4 -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16'
+                ldflags = cflags + '-l'
+                libs = ['opencm3_stm32f4']
+            else:
+                SCons.Warnings.warn(
+                    ToolIndeMicWarning,
+                    "Unknown micro: " + micro
+                )
+                Exit(1)
+            ldflags = cflags
+        elif architecture == 'avr':
+            cflags = '-mmcu=' + micro
+            ldflags = cflags + ' -T' + self.linkerBuilder.getNode(architecture, micro)[0].abspath
+
         env = self.envByArch[architecture]
         if not env:
             return None
         env = env.Clone()
         env.Append(
-            CCFLAGS = mcustring,
-            LINKFLAGS = mcustring + ' -T' + self.linkerBuilder.getNode(architecture, micro)[0].abspath
+            CCFLAGS = ' ' + cflags,
+            LINKFLAGS = ' ' + ldflags,
+            LIBS = libs,
         )
         self.envByMicro[architecture][micro] = env
 
@@ -393,6 +414,36 @@ def generate(env, **kwargs):
     d['avr'] = avr_env
     avr_conf.Finish()
 
+    # STM32
+    stm32_env = Environment(
+        CC='arm-none-eabi-gcc',
+        CXX='arm-none-eabi-g++',
+        CPPPATH = ['#/lib', libopencm3_root + '/arm-none-eabi/include'],
+        LIBPATH = [libopencm3_root + '/arm-none-eabi/lib'],
+        CXXFLAGS = '-std=c++11',
+        CCFLAGS = '-Os -Wall',
+        ENV = {'PATH' : os.environ['PATH']},
+        BUILDERS = {
+            'Hex' : Builder(
+                action = 'arm-none-eabi-objcopy -j .text -j .data -O ihex $SOURCE $TARGET',
+                suffix = '.hex',
+                src_suffix = '.elf',
+            ),
+            'Asm' : Builder(
+                action = 'arm-none-eabi-objdump -d $SOURCE > $TARGET',
+                suffix = '.s',
+                src_suffix = '.elf',
+            ),
+        }
+    )
+    stm32_conf = Configure(stm32_env, custom_tests = {'CheckPKG' : CheckPKG})
+
+    if not stm32_conf.CheckCC():
+        stm32_env = False
+    d['stm32'] = stm32_env
+    stm32_conf.Finish()
+
+    # common
     indemicBoard = IndemicBoardBuilder(d)
     builders['indemicBoard'] = indemicBoard
     env.Append(
