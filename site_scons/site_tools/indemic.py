@@ -23,12 +23,105 @@ from SCons.Script import *
 from SCons.Builder import Builder
 import os
 
+class BaseFamily:
+    def getName(self):
+        raise NotImplementedError()
+    def getEnv(self):
+        return self._env
+    def getBuilders(self):
+        return self._builders
+
+    def _initEnv(self, toolchain_prefix):
+        """
+        Initializes self._env by toolchain prefix
+        TODO: remove hardcoded path to indemic library
+        """
+        self._env = Environment(
+            CC = toolchain_prefix + '-gcc',
+            CXX = toolchain_prefix + '-g++',
+            CPPPATH = ['#/lib'],
+            CXXFLAGS = '-std=c++11',
+            CCFLAGS = '-Os -Wall',
+            ENV = {'PATH' : os.environ['PATH']},
+            BUILDERS = {
+                'Hex' : Builder(
+                    action = toolchain_prefix + '-objcopy -j .text -j .data -O ihex $SOURCE $TARGET',
+                    suffix = '.hex',
+                    src_suffix = '.elf',
+                ),
+                'Asm' : Builder(
+                    action = toolchain_prefix + '-objdump -d $SOURCE > $TARGET',
+                    suffix = '.s',
+                    src_suffix = '.elf',
+                ),
+            }
+        )
+
+class AVRFamily(BaseFamily):
+    """
+    AVR family class
+    """
+    def __init__(self):
+        """
+        Append builders to environment
+        TODO: remove hardcoded path to indemic library
+        """
+        self._builders = {}
+        self._initEnv('avr')
+
+        def CheckPKG(context, name):
+             context.Message( 'Checking for %s... ' % name )
+             ret = context.TryAction('pkg-config --exists \'%s\'' % name)[0]
+             context.Result( ret )
+             return ret
+        conf = Configure(self._env, custom_tests = {'CheckPKG' : CheckPKG})
+
+        if not conf.CheckCC():
+            self._env = False
+        if self._env:
+            have_simavr = False
+            if conf.CheckPKG('simavr'):
+                have_simavr = True
+            if have_simavr:
+                avr_sim_env = self._env.Clone()
+                avr_sim_env.ParseConfig("pkg-config simavr --cflags")
+                indemicBoardSimAvr = IndemicBoardBuilder({'avr': avr_sim_env})
+                self._builders['indemicBoardSimAvr'] = indemicBoardSimAvr
+        conf.Finish()
+
+    def getName(self):
+        return 'avr'
+    def getEnv(self):
+        return self._env
+    def getBuilders(self):
+        return self._builders
+
+libopencm3_root = '/opt/libopencm3'
+class STM32Family(BaseFamily):
+    def __init__(self):
+        self._initEnv('arm-none-eabi')
+        self._env.Append(
+            CPPPATH = [libopencm3_root + '/arm-none-eabi/include'],
+            LIBPATH = [libopencm3_root + '/arm-none-eabi/lib'],
+        )
+
+        conf = Configure(self._env)
+        if not conf.CheckCC():
+            self._env = False
+        conf.Finish()
+
+    def getName(self):
+        return 'stm32'
+    def getEnv(self):
+        return self._env
+    def getBuilders(self):
+        return {}
+
 # A warning class to notify users of problems
 class ToolIndeMicWarning(SCons.Warnings.Warning):
     pass
 
 SCons.Warnings.enableWarningClass(ToolIndeMicWarning)
-libopencm3_root = '/opt/libopencm3'
 
 class LinkerScriptBuilder:
     """
@@ -364,86 +457,14 @@ class IndemicBoardBuilder:
         self.envByMicro[architecture][micro] = env
 
 def generate(env, **kwargs):
-    """
-    Append builders to environment
-    TODO: remove hardcoded path to indemic library
-    """
     d = {}
     builders = {}
+    families = [AVRFamily(), STM32Family()]
 
-    # AVR
-    avr_env = Environment(
-        CC='avr-gcc',
-        CXX='avr-g++',
-        CPPPATH = ['#/lib'],
-        CXXFLAGS = '-std=c++11',
-        CCFLAGS = '-Os -Wall',
-        ENV = {'PATH' : os.environ['PATH']},
-        BUILDERS = {
-            'Hex' : Builder(
-                action = 'avr-objcopy -j .text -j .data -O ihex $SOURCE $TARGET',
-                suffix = '.hex',
-                src_suffix = '.elf',
-            ),
-            'Asm' : Builder(
-                action = 'avr-objdump -d $SOURCE > $TARGET',
-                suffix = '.s',
-                src_suffix = '.elf',
-            ),
-        }
-    )
-    def CheckPKG(context, name):
-         context.Message( 'Checking for %s... ' % name )
-         ret = context.TryAction('pkg-config --exists \'%s\'' % name)[0]
-         context.Result( ret )
-         return ret
-    avr_conf = Configure(avr_env, custom_tests = {'CheckPKG' : CheckPKG})
+    for f in families:
+        d[f.getName()] = f.getEnv()
+        builders.update(f.getBuilders())
 
-    if not avr_conf.CheckCC():
-        avr_env = False
-    if avr_env:
-        have_simavr = False
-        if avr_conf.CheckPKG('simavr'):
-            have_simavr = True
-
-        if have_simavr:
-            avr_sim_env = avr_env.Clone()
-            avr_sim_env.ParseConfig("pkg-config simavr --cflags")
-            indemicBoardSimAvr = IndemicBoardBuilder({'avr': avr_sim_env})
-            builders['indemicBoardSimAvr'] = indemicBoardSimAvr
-    d['avr'] = avr_env
-    avr_conf.Finish()
-
-    # STM32
-    stm32_env = Environment(
-        CC='arm-none-eabi-gcc',
-        CXX='arm-none-eabi-g++',
-        CPPPATH = ['#/lib', libopencm3_root + '/arm-none-eabi/include'],
-        LIBPATH = [libopencm3_root + '/arm-none-eabi/lib'],
-        CXXFLAGS = '-std=c++11',
-        CCFLAGS = '-Os -Wall',
-        ENV = {'PATH' : os.environ['PATH']},
-        BUILDERS = {
-            'Hex' : Builder(
-                action = 'arm-none-eabi-objcopy -j .text -j .data -O ihex $SOURCE $TARGET',
-                suffix = '.hex',
-                src_suffix = '.elf',
-            ),
-            'Asm' : Builder(
-                action = 'arm-none-eabi-objdump -d $SOURCE > $TARGET',
-                suffix = '.s',
-                src_suffix = '.elf',
-            ),
-        }
-    )
-    stm32_conf = Configure(stm32_env, custom_tests = {'CheckPKG' : CheckPKG})
-
-    if not stm32_conf.CheckCC():
-        stm32_env = False
-    d['stm32'] = stm32_env
-    stm32_conf.Finish()
-
-    # common
     indemicBoard = IndemicBoardBuilder(d)
     builders['indemicBoard'] = indemicBoard
     env.Append(
