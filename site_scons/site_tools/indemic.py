@@ -423,7 +423,8 @@ class STM32Family(BaseFamily):
             Exit(1)
 
         libs = ['opencm3_stm32f' + n]
-        ldflags = cflags
+        ldscriptpath = '#lib/indemic/ldscripts/stm32/' + micro + '.ld -nostartfiles'
+        ldflags = cflags + ' -T' + File(ldscriptpath).abspath
 
         env = self._env.Clone()
         env.Append(
