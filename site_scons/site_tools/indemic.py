@@ -23,105 +23,17 @@ from SCons.Script import *
 from SCons.Builder import Builder
 import os
 
-class BaseFamily:
-    def getName(self):
-        raise NotImplementedError()
-    def getEnv(self):
-        return self._env
-    def getBuilders(self):
-        return self._builders
-
-    def _initEnv(self, toolchain_prefix):
-        """
-        Initializes self._env by toolchain prefix
-        TODO: remove hardcoded path to indemic library
-        """
-        self._env = Environment(
-            CC = toolchain_prefix + '-gcc',
-            CXX = toolchain_prefix + '-g++',
-            CPPPATH = ['#/lib'],
-            CXXFLAGS = '-std=c++11',
-            CCFLAGS = '-Os -Wall',
-            ENV = {'PATH' : os.environ['PATH']},
-            BUILDERS = {
-                'Hex' : Builder(
-                    action = toolchain_prefix + '-objcopy -j .text -j .data -O ihex $SOURCE $TARGET',
-                    suffix = '.hex',
-                    src_suffix = '.elf',
-                ),
-                'Asm' : Builder(
-                    action = toolchain_prefix + '-objdump -d $SOURCE > $TARGET',
-                    suffix = '.s',
-                    src_suffix = '.elf',
-                ),
-            }
+def parsePath(path):
+    parts = path.split('.')
+    if len(parts) < 3:
+        SCons.Warnings.warn(
+            ToolIndeMicWarning,
+            "buildIndemicBoard requires target to have filename name.micro.arch.elf\n"
+            "                  e.g. some.at90usb162.avr.elf\n"
+            "Got filename: " + target[0]
         )
-
-class AVRFamily(BaseFamily):
-    """
-    AVR family class
-    """
-    def __init__(self):
-        """
-        Append builders to environment
-        TODO: remove hardcoded path to indemic library
-        """
-        self._builders = {}
-        self._initEnv('avr')
-
-        def CheckPKG(context, name):
-             context.Message( 'Checking for %s... ' % name )
-             ret = context.TryAction('pkg-config --exists \'%s\'' % name)[0]
-             context.Result( ret )
-             return ret
-        conf = Configure(self._env, custom_tests = {'CheckPKG' : CheckPKG})
-
-        if not conf.CheckCC():
-            self._env = False
-        if self._env:
-            have_simavr = False
-            if conf.CheckPKG('simavr'):
-                have_simavr = True
-            if have_simavr:
-                avr_sim_env = self._env.Clone()
-                avr_sim_env.ParseConfig("pkg-config simavr --cflags")
-                indemicBoardSimAvr = IndemicBoardBuilder({'avr': avr_sim_env})
-                self._builders['indemicBoardSimAvr'] = indemicBoardSimAvr
-        conf.Finish()
-
-    def getName(self):
-        return 'avr'
-    def getEnv(self):
-        return self._env
-    def getBuilders(self):
-        return self._builders
-
-libopencm3_root = '/opt/libopencm3'
-class STM32Family(BaseFamily):
-    def __init__(self):
-        self._initEnv('arm-none-eabi')
-        self._env.Append(
-            CPPPATH = [libopencm3_root + '/arm-none-eabi/include'],
-            LIBPATH = [libopencm3_root + '/arm-none-eabi/lib'],
-        )
-
-        conf = Configure(self._env)
-        if not conf.CheckCC():
-            self._env = False
-        conf.Finish()
-
-    def getName(self):
-        return 'stm32'
-    def getEnv(self):
-        return self._env
-    def getBuilders(self):
-        return {}
-
-# A warning class to notify users of problems
-class ToolIndeMicWarning(SCons.Warnings.Warning):
-    pass
-
-SCons.Warnings.enableWarningClass(ToolIndeMicWarning)
+        Exit(1)
+    return [parts[-2], parts[-3]]
 
 class LinkerScriptBuilder:
     """
@@ -141,7 +53,7 @@ class LinkerScriptBuilder:
         )
         self.filepathByMicro = {}
 
-    def _getLinkerScriptFromOutput(self, path):
+    def _getLinkerScriptFromGCCOutput(self, path):
         """
         Gets linkerscript from GCC verbose output file.
         @param path Path to output of GCC
@@ -303,7 +215,7 @@ class LinkerScriptBuilder:
                 "Failed to execute: '" + getLinkerScriptCmd + "'"
             )
             Exit(1)
-        linkerScript = self._getLinkerScriptFromOutput(tmpfile.abspath)
+        linkerScript = self._getLinkerScriptFromGCCOutput(tmpfile.abspath)
         interrupts = self._getInterruptsByMicro(architecture, micro)
         patchedStr = self._patchLinkerScript(linkerScript, interrupts)
         with open(target[0].abspath, 'w') as f:
@@ -349,21 +261,201 @@ class LinkerScriptBuilder:
             self.linkerScripts[architecture][micro] = self.env.LinkerScript(path, [])
         return self.linkerScripts[architecture][micro]
 
+class BaseFamily:
+    def getName(self):
+        raise NotImplementedError()
+    def getEnv(self):
+        return self._env
+    def getBuilders(self):
+        return self._builders
+    def postProcessProgramNode(self, prog):
+        pass
+    def initMicro(self):
+        raise NotMiplementedError()
+
+
+    def _initEnv(self, toolchain_prefix):
+        """
+        Initializes self._env by toolchain prefix
+        TODO: remove hardcoded path to indemic library
+        """
+        self._env = Environment(
+            CC = toolchain_prefix + '-gcc',
+            CXX = toolchain_prefix + '-g++',
+            CPPPATH = ['#/lib'],
+            CXXFLAGS = '-std=c++11',
+            CCFLAGS = '-Os -Wall',
+            ENV = {'PATH' : os.environ['PATH']},
+            BUILDERS = {
+                'Hex' : Builder(
+                    action = toolchain_prefix + '-objcopy -j .text -j .data -O ihex $SOURCE $TARGET',
+                    suffix = '.hex',
+                    src_suffix = '.elf',
+                ),
+                'Asm' : Builder(
+                    action = toolchain_prefix + '-objdump -d $SOURCE > $TARGET',
+                    suffix = '.s',
+                    src_suffix = '.elf',
+                ),
+            }
+        )
+
+class AVRFamily(BaseFamily):
+    """
+    AVR family class
+    """
+
+    linkerBuilder = LinkerScriptBuilder()
+
+    def __init__(self):
+        """
+        Append builders to environment
+        TODO: remove hardcoded path to indemic library
+        """
+        self._initEnv('avr')
+
+        conf = Configure(self._env)
+
+        if not conf.CheckCC():
+            self._env = False
+        conf.Finish()
+        # TODO: think about better solution...
+        if self._env:
+            self.simavr = AVRFamilySimAVR()
+
+    def getName(self):
+        return 'avr'
+    def getEnv(self):
+        return self._env
+    def getBuilders(self):
+        return self.simavr.getBuilders()
+
+    def postProcessProgramNode(self, prog):
+        [family, micro] = parsePath(prog[0].abspath)
+        Depends(prog, self.linkerBuilder.getNode(family, micro))
+
+    def initMicro(self, micro):
+        """
+        Initializes internal fields for new microcontroller
+        Creates new environment with -mmcu flag, adds -T flag with
+        linker script
+
+        @param architecture e.g. avr
+        @param micro e.g. at90usb162
+        """
+        if not self._env:
+            return None 
+
+        cflags = '-mmcu=' + micro
+        ldflags = cflags + ' -T' + self.linkerBuilder.getNode(self.getName(), micro)[0].abspath
+
+        env = self._env.Clone()
+        env.Append(
+            CCFLAGS = ' ' + cflags,
+            LINKFLAGS = ' ' + ldflags,
+        )
+        return env
+
+class AVRFamilySimAVR(AVRFamily):
+    def __init__(self):
+        self._builders = {}
+        self._initEnv('avr')
+        def CheckPKG(context, name):
+             context.Message( 'Checking for %s... ' % name )
+             ret = context.TryAction('pkg-config --exists \'%s\'' % name)[0]
+             context.Result( ret )
+             return ret
+        conf = Configure(self._env, custom_tests = {'CheckPKG' : CheckPKG})
+        have_simavr = conf.CheckPKG('simavr')
+        conf.Finish()
+        if not have_simavr:
+            self._env = False
+            return
+
+        self._env.ParseConfig("pkg-config simavr --cflags")
+        indemicBoardSimAvr = IndemicBoardBuilder([self])
+        self._builders['indemicBoardSimAvr'] = indemicBoardSimAvr
+    def getBuilders(self):
+        return self._builders
+
+libopencm3_root = '/opt/libopencm3'
+class STM32Family(BaseFamily):
+    def __init__(self):
+        self._initEnv('arm-none-eabi')
+        self._env.Append(
+            CPPPATH = [libopencm3_root + '/arm-none-eabi/include'],
+            LIBPATH = [libopencm3_root + '/arm-none-eabi/lib'],
+        )
+
+        conf = Configure(self._env)
+        if not conf.CheckCC():
+            self._env = False
+        conf.Finish()
+
+    def getName(self):
+        return 'stm32'
+    def getEnv(self):
+        return self._env
+    def getBuilders(self):
+        return {}
+
+    def initMicro(self, micro):
+        if micro[:6] != 'stm32f':
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "STM32Family: Unknown micro: " + micro
+            )
+            Exit(1)
+
+        n = micro[6]
+        cflags = '-DSTM32F' + n + ' -mthumb -mcpu=cortex-m'
+        if n == '0':
+            clfags += '0'
+        elif n == '1' or n == '2':
+            clfags += '3'
+        elif n == '3' or n == '4':
+            cflags += '4 -mfloat-abi=hard -mfpu=fpv4-sp-d16'
+        else:
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "STM32Family: Unknown micro: " + micro + "(n = " + n + ")"
+            )
+            Exit(1)
+
+        libs = ['opencm3_stm32f' + n]
+        ldflags = cflags
+
+        env = self._env.Clone()
+        env.Append(
+            CCFLAGS = ' ' + cflags,
+            LINKFLAGS = ' ' + ldflags,
+            LIBS = libs,
+        )
+        return env
+
+
+# A warning class to notify users of problems
+class ToolIndeMicWarning(SCons.Warnings.Warning):
+    pass
+
+SCons.Warnings.enableWarningClass(ToolIndeMicWarning)
+
 class IndemicBoardBuilder:
     """
     Builder for indemic boards. Adds options for mcu and linker script
     """
 
-    linkerBuilder = LinkerScriptBuilder()
-
-    def __init__(self, initialArchitecturesDict):
+    def __init__(self, initialFamiliesList):
         """ Constructor """
-        self.envByArch = {}
+        self.families = {}
+        self.envByFamily = {}
         self.envByMicro = {}
-        for envkey in initialArchitecturesDict:
-            self.envByArch[envkey] = initialArchitecturesDict[envkey]
-            if self.envByArch[envkey]:
-                self.envByArch[envkey] = self.envByArch[envkey].Clone()
+        for f in initialFamiliesList:
+            envkey = f.getName()
+            self.families[envkey] = f
+            self.envByFamily[envkey] = f.getEnv()
+            if self.envByFamily[envkey]:
+                self.envByFamily[envkey] = self.envByFamily[envkey].Clone()
             self.envByMicro[envkey] = {}
 
     def __call__(self, env, target, sources = None):
@@ -377,84 +469,33 @@ class IndemicBoardBuilder:
         """
 
         target = Flatten(Split(target))
-        parts = target[0].split('.')
-        if len(parts) < 3:
+        [family, micro] = parsePath(target[0])
+
+        if family not in self.families:
             SCons.Warnings.warn(
                 ToolIndeMicWarning,
-                "buildIndemicBoard requires target to have filename name.micro.arch.elf\n"
-                "                  e.g. some.at90usb162.avr.elf\n"
-                "Got filename: " + target[0]
+                "Family " + family + " is unknown."
             )
             Exit(1)
 
-        architecture = parts[-2] # e.g. avr
-        micro = parts[-3]        # e.g. at90usb162
-
-        if architecture not in self.envByArch:
+        if not self.families[family].getEnv():
             SCons.Warnings.warn(
                 ToolIndeMicWarning,
-                "Architecture " + architecture + " is unknown."
-            )
-            Exit(1)
-
-        if not self.envByArch[architecture]:
-            SCons.Warnings.warn(
-                ToolIndeMicWarning,
-                "Skipping target '" + target[0] + "' as AVR architecture is unavailable.\n"
-                "Check for avr-gcc in your path\n"
+                "Skipping target '" + target[0] + "' as " + family + " family is unavailable.\n"
             )
             return None
 
-        if micro not in self.envByMicro[architecture]:
-            self._initMicro(architecture, micro)
+        if micro not in self.envByMicro[family]:
+            self.envByMicro[family][micro] = self.families[family].initMicro(micro)
         
-        avrEnv = self.envByMicro[architecture][micro]
-        prog = avrEnv.Program(target, sources)
-        avrEnv.Hex(prog)
-        avrEnv.Asm(prog)
-        if architecture == 'avr':
-            Depends(prog, self.linkerBuilder.getNode(architecture, micro))
+        menv = self.envByMicro[family][micro]
+        prog = menv.Program(target, sources)
+        menv.Hex(prog)
+        menv.Asm(prog)
+
+        self.families[family].postProcessProgramNode(prog)
 
         return prog
-
-    def _initMicro(self, architecture, micro):
-        """
-        Initializes internal fields for new microcontroller
-        Creates new environment with -mmcu flag, adds -T flag with
-        linker script
-
-        @param architecture e.g. avr
-        @param micro e.g. at90usb162
-        """
-        cflags = ''
-        ldflags = ''
-        libs = []
-        if architecture == 'stm32':
-            if micro[:7] == 'stm32f4':
-                cflags = '-DSTM32F4 -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16'
-                ldflags = cflags + '-l'
-                libs = ['opencm3_stm32f4']
-            else:
-                SCons.Warnings.warn(
-                    ToolIndeMicWarning,
-                    "Unknown micro: " + micro
-                )
-                Exit(1)
-            ldflags = cflags
-        elif architecture == 'avr':
-            cflags = '-mmcu=' + micro
-            ldflags = cflags + ' -T' + self.linkerBuilder.getNode(architecture, micro)[0].abspath
-
-        env = self.envByArch[architecture]
-        if not env:
-            return None
-        env = env.Clone()
-        env.Append(
-            CCFLAGS = ' ' + cflags,
-            LINKFLAGS = ' ' + ldflags,
-            LIBS = libs,
-        )
-        self.envByMicro[architecture][micro] = env
 
 def generate(env, **kwargs):
     d = {}
@@ -462,10 +503,9 @@ def generate(env, **kwargs):
     families = [AVRFamily(), STM32Family()]
 
     for f in families:
-        d[f.getName()] = f.getEnv()
         builders.update(f.getBuilders())
 
-    indemicBoard = IndemicBoardBuilder(d)
+    indemicBoard = IndemicBoardBuilder(families)
     builders['indemicBoard'] = indemicBoard
     env.Append(
         BUILDERS = builders,
