@@ -63,6 +63,29 @@ def flashAvr(micro, filename):
     os.execvp("avrdude", ['avrdude', '-cavrftdi', '-p', flashAvr.microDict[micro], '-U', 'flash:w:' + filename])
     return True
 
+def flashSTM32(micro, filename):
+    """
+    Flashes STM32 microcontroller. Only STM32F4Discovery
+    board is supported at the moment
+    @param micro Microcontroller name (ignored currently)
+    @param filename Path to hex file to flash
+    @returns True on success
+    """
+    args = [
+        'openocd',
+        '-c', 'source [find interface/stlink-v2.cfg]',
+        '-c', 'source [find target/stm32f4x_stlink.cfg]',
+        '-c', 'reset_config srst_only srst_nogate',
+        '-c', 'init',
+        '-c', 'reset halt',
+        '-c', 'flash write_image erase ' + filename,
+        '-c', 'reset',
+        '-c', 'shutdown',
+    ]
+    print "Executing '" + ' '.join(args) + "'"
+    os.execvp(args[0], args)
+    return True
+
 def flashHex(filename):
     """
     Flash hex file to microcontroller
@@ -77,11 +100,15 @@ def flashHex(filename):
         return False
     architecture = parts[-2]
     micro = parts[-3]
-    if architecture != 'avr':
-        print("Unsupported architecture: " + architecture)
-        return False
+    if architecture == 'avr':
+        return flashAvr(micro, filename)
 
-    return flashAvr(micro, filename)
+    if architecture == 'stm32':
+        return flashSTM32(micro, filename)
+
+    print("Unsupported architecture: " + architecture)
+    return False
+
 
 if len(sys.argv) > 2:
     print("Usage: indemic_flash [part_of_filename]")
