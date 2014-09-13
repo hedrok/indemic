@@ -23,6 +23,17 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 
+#include <indemic/stm32/products.h>
+#include <indemic/stm32/IOPin.h>
+
+/* 168 MHz  10^9 / (168 * 10^6) */
+typedef IndeMic::stm32::STM32F4Mic<6> M;
+
+typedef IndeMic::stm32::IOPin<M, M::PortD, 12> LedGreen;
+typedef IndeMic::stm32::IOPin<M, M::PortD, 13> LedOrange;
+typedef IndeMic::stm32::IOPin<M, M::PortD, 14> LedRed;
+typedef IndeMic::stm32::IOPin<M, M::PortD, 15> LedBlue;
+
 /* Set STM32 to 168 MHz. */
 static void clock_setup(void)
 {
@@ -34,25 +45,25 @@ static void clock_setup(void)
 
 static void gpio_setup(void)
 {
-	/* Set GPIO12-15 (in GPIO port D) to 'output push-pull'. */
-	gpio_mode_setup(GPIOD, GPIO_MODE_OUTPUT,
-			GPIO_PUPD_NONE, GPIO12 | GPIO13 | GPIO14 | GPIO15);
+    LedGreen::makeOutput();
+    LedOrange::makeOutput();
+    LedRed::makeOutput();
+    LedBlue::makeOutput();
 }
 
 int main(void)
 {
-	int i;
+	int i, v;
 
 	clock_setup();
 	gpio_setup();
 
-	/* Set two LEDs for wigwag effect when toggling. */
-	gpio_set(GPIOD, GPIO12 | GPIO14);
-
-	/* Blink the LEDs (PD12, PD13, PD14 and PD15) on the board. */
+    v = 1;
 	while (1) {
 		/* Toggle LEDs. */
-		gpio_toggle(GPIOD, GPIO12 | GPIO13 | GPIO14 | GPIO15);
+        LedGreen::setValue(v);
+        LedBlue::setValue(v ^ 1);
+        v ^= 1;
 		for (i = 0; i < 6000000; i++) { /* Wait a bit. */
 			__asm__("nop");
 		}
