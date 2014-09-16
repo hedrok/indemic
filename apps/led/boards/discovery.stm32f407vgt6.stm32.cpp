@@ -38,9 +38,6 @@ typedef IndeMic::stm32::IOPin<M, M::PortD, 15> LedBlue;
 static void clock_setup(void)
 {
 	rcc_clock_setup_hse_3v3(&hse_8mhz_3v3[CLOCK_3V3_168MHZ]);
-
-	/* Enable GPIOD clock. */
-	rcc_periph_clock_enable(RCC_GPIOD);
 }
 
 static void gpio_setup(void)

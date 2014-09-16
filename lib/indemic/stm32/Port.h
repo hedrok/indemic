@@ -18,6 +18,9 @@
  */
 #pragma once
 
+#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/gpio.h>
+
 namespace IndeMic
 {
 namespace stm32
@@ -29,8 +32,29 @@ namespace stm32
 template<typename M, int base_address>
 class Port
 {
+    static_assert(
+           GPIOB - GPIOA == GPIOC - GPIOB
+        && GPIOB - GPIOA == GPIOD - GPIOC
+        && GPIOB - GPIOA == GPIOE - GPIOD
+        && GPIOB - GPIOA == GPIOF - GPIOE,
+        "Assumption that all GPIOn regions are of same width failed");
+    static_assert(
+           base_address == GPIOA
+        || base_address == GPIOB
+        || base_address == GPIOC
+        || base_address == GPIOD
+        || base_address == GPIOE
+        || base_address == GPIOF,
+        "base_address must be one of GPIOn");
+
 public:
     enum t { base = base_address };
+    static void initClock() __attribute__((constructor))
+                            __attribute__((used))
+    {
+	    //rcc_periph_clock_enable(RCC_GPIOn);
+        RCC_AHB1ENR |= (1 << ((base_address - GPIOA) / (GPIOB - GPIOA)));
+    }
 };
 
 }
