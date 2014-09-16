@@ -284,7 +284,7 @@ class BaseFamily:
             CXX = toolchain_prefix + '-g++',
             CPPPATH = ['#/lib'],
             CXXFLAGS = '-std=c++11',
-            CCFLAGS = '-Os -Wall',
+            CCFLAGS = '-g -Os -Wall',
             ENV = {'PATH' : os.environ['PATH']},
             BUILDERS = {
                 'Hex' : Builder(
