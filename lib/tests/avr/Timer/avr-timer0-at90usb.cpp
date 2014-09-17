@@ -3,7 +3,7 @@
 #include <avr/sleep.h>
 
 #ifndef DONT_USE_INDEMIC
-#include <indemic/avr/products.h>
+#include <indemic/avr/AT90USB162Mic.h>
 #include <indemic/avr/PeriodicRunner.h>
 
 using namespace IndeMic::avr;

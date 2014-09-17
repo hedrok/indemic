@@ -23,7 +23,7 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 
-#include <indemic/stm32/products.h>
+#include <indemic/stm32/STM32F4Mic.h>
 #include <indemic/stm32/IOPin.h>
 
 /* 168 MHz  10^9 / (168 * 10^6) */

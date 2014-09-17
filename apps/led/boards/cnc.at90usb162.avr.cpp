@@ -18,7 +18,7 @@
  */
 
 #include <indemic/avr/IOPin.h>
-#include <indemic/avr/products.h>
+#include <indemic/avr/AT90USB162Mic.h>
 #include <indemic/avr/PeriodicRunner.h>
 
 #include "../HelloLed.h"

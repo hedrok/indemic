@@ -19,8 +19,7 @@
 #pragma once
 
 #include <indemic/IOPin.h>
-#include <indemic/avr/micro_types.h>
-#include <indemic/avr/products.h>
+#include <indemic/avr/AVRMic.h>
 #include <indemic/generic/RegisterBit.h>
 
 namespace IndeMic

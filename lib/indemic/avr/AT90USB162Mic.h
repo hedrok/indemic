@@ -22,41 +22,14 @@
 #pragma once
 
 #include <indemic/avr/Port.h>
+#include <indemic/avr/AVRMic.h>
 #include <indemic/generic/RegisterBit.h>
 #include <indemic/generic/RegisterVisitor.h>
-
-// This macro seems required to me. There are different names
-// and different attributes for different architectures, so
-// application can not just use some name like call.
-#define INDEMIC_INTERRUPT_FUNCTION_NAME __vector_1
-#define INDEMIC_INTERRUPT_FUNCTION static void __vector_1() __attribute__((signal))
 
 namespace IndeMic
 {
 namespace avr
 {
-    /** Generic AVR microcontroller */
-    template<uint64_t ns = 0>
-    class AVRMic
-    {
-        public:
-            typedef volatile uint8_t register_t;
-            typedef uint8_t register_value_t;
-            typedef volatile uint16_t register_double_t;
-            typedef uint16_t register_double_value_t;
-
-            /** Represents type of port mask */
-            typedef uint8_t port_mask_t;
-
-            /** Represents type of pin index */
-            typedef uint8_t pin_ind_t;
-
-            /** Represents type of logic entry - high or low */
-            typedef uint8_t logic_t;
-
-            enum {nsPerClock = ns};
-    };
-
     template<uint64_t ns = 0>
     class AT90USB162Mic : public AVRMic<ns>
     {
@@ -579,12 +552,3 @@ namespace avr
             = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
 }
 }
-
-extern "C" void __init();
-extern "C"
-__attribute__ ((section (".error_interrupt_handler")))
-void __vector_default()
-{
-    while (true) {}
-}
-__attribute__ ((used)) __attribute__ ((section (".reset_vector"))) const uint16_t reset = (uint16_t)(&__init);

@@ -21,9 +21,6 @@
  */
 #pragma once
 
-#include <libopencm3/stm32/gpio.h>
-#include <indemic/stm32/Port.h>
-
 namespace IndeMic
 {
 namespace stm32
@@ -50,19 +47,6 @@ namespace stm32
 
             /** Represents type of logic entry - high or low */
             typedef uint8_t logic_t;
-    };
-
-    template<uint64_t ns = 0>
-    class STM32F4Mic : public STM32Mic<ns>
-    {
-        public:
-            typedef STM32Mic<ns> parent;
-            typedef STM32F4Mic M;
-
-            typedef Port<M, GPIOB> PortB;
-            typedef Port<M, GPIOC> PortC;
-            typedef Port<M, GPIOD> PortD;
-
     };
 }
 }

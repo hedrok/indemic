@@ -1,5 +1,5 @@
 /**
- * @file micro_types.h
+ * @file microcontrollers.h
  * @package IndeMic
  * @author Kirill Yatsenko <kirill.yatsenko@hedrok.org>
  *
@@ -17,27 +17,29 @@
  * http://www.gnu.org/copyleft/gpl.html
  *
  * @section DESCRIPTION
- * This file contains basic types typedefs for AVR architecture
+ * This file contains class tags for STM32 products
  */
 #pragma once
 
-#include <inttypes.h>
+#include <libopencm3/stm32/gpio.h>
+#include <indemic/stm32/STM32Mic.h>
+#include <indemic/stm32/Port.h>
 
 namespace IndeMic
 {
-namespace avr
+namespace stm32
 {
-    /** Represents type of pin index */
-    typedef uint8_t pin_ind_t;
+    template<uint64_t ns = 0>
+    class STM32F4Mic : public STM32Mic<ns>
+    {
+        public:
+            typedef STM32Mic<ns> parent;
+            typedef STM32F4Mic M;
 
-    /** Represents type of PORT */
-    typedef volatile uint8_t& register_t;
+            typedef Port<M, GPIOB> PortB;
+            typedef Port<M, GPIOC> PortC;
+            typedef Port<M, GPIOD> PortD;
 
-    /** Represents type of port mask */
-    typedef uint8_t port_mask_t;
-
-    /** Represents type of logic entry - high or low */
-    typedef uint8_t logic_t;
-
+    };
 }
 }
