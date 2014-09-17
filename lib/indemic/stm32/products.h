@@ -56,6 +56,7 @@ namespace stm32
     class STM32F4Mic : public STM32Mic<ns>
     {
         public:
+            typedef STM32Mic<ns> parent;
             typedef STM32F4Mic M;
 
             typedef Port<M, GPIOB> PortB;

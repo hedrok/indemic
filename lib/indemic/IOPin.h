@@ -18,29 +18,26 @@
  */
 #pragma once
 
-#include <libopencm3/stm32/gpio.h>
-#include <indemic/IOPin.h>
+#include <stdint.h>
 
 namespace IndeMic
 {
 
 /**
- * One Input/Output Pin class
- * STM32 implementation
+ * One Input/Output Pin class interface
  */
-template<typename Port, uint8_t pin, uint64_t ns>
-class IOPin<stm32::STM32Mic<ns>, Port, pin>
+template<typename Microcontroller, typename Port, uint8_t pin>
+class IOPin
 {
-    typedef stm32::STM32Mic<ns> M;
-    typedef typename M::logic_t logic_t;
-    static constexpr typename M::port_mask_t msk = 1 << pin;
+    typedef IOPin<typename Microcontroller::parent, Port, pin> P;
+    typedef typename Microcontroller::logic_t logic_t;
     public:
         /**
          * Read value from pin
          */
         static inline logic_t get()
         {
-            return 0;
+            return P::get();
         }
 
         /**
@@ -48,6 +45,7 @@ class IOPin<stm32::STM32Mic<ns>, Port, pin>
          */
         static inline void makeInput()
         {
+            return P::makeInput();
         }
 
         /**
@@ -55,8 +53,7 @@ class IOPin<stm32::STM32Mic<ns>, Port, pin>
          */
         static inline void makeOutput()
         {
-            gpio_mode_setup(Port::base, GPIO_MODE_OUTPUT,
-                    GPIO_PUPD_NONE, msk);
+            P::makeOutput();
         }
 
         /**
@@ -67,7 +64,7 @@ class IOPin<stm32::STM32Mic<ns>, Port, pin>
          */
         static inline void setHigh()
         {
-		    gpio_set(Port::base, msk);
+            P::setHigh();
         }
 
         /**
@@ -77,7 +74,7 @@ class IOPin<stm32::STM32Mic<ns>, Port, pin>
          */
         static inline void setLow()
         {
-		    gpio_clear(Port::base, msk);
+            P::setLow();
         }
 
         /**
@@ -87,11 +84,7 @@ class IOPin<stm32::STM32Mic<ns>, Port, pin>
          */
         static inline void setValue(logic_t value)
         {
-            if (value) {
-                setHigh();
-            } else {
-                setLow();
-            }
+            P::setValue(value);
         }
 };
 

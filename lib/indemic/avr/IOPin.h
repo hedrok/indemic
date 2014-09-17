@@ -18,21 +18,23 @@
  */
 #pragma once
 
+#include <indemic/IOPin.h>
 #include <indemic/avr/micro_types.h>
+#include <indemic/avr/products.h>
 #include <indemic/generic/RegisterBit.h>
 
 namespace IndeMic
-{
-namespace avr
 {
 
 /**
  * One Input/Output Pin class
  * AVR implementation
  */
-template<typename Microcontroller, typename Port, uint8_t pin>
-class IOPin
+template<typename Port, uint8_t pin, uint64_t ns>
+class IOPin<avr::AVRMic<ns>, Port, pin>
 {
+    typedef avr::AVRMic<ns> M;
+    typedef typename M::logic_t logic_t;
     public:
         /**
          * Read value from pin
@@ -98,5 +100,4 @@ class IOPin
         constexpr static RegisterBit<typename Port::DDR, pin> _ddrBit = RegisterBit<typename Port::DDR, pin>();
 };
 
-}
 }

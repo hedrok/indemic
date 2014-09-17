@@ -44,6 +44,16 @@ namespace avr
             typedef uint8_t register_value_t;
             typedef volatile uint16_t register_double_t;
             typedef uint16_t register_double_value_t;
+
+            /** Represents type of port mask */
+            typedef uint8_t port_mask_t;
+
+            /** Represents type of pin index */
+            typedef uint8_t pin_ind_t;
+
+            /** Represents type of logic entry - high or low */
+            typedef uint8_t logic_t;
+
             enum {nsPerClock = ns};
     };
 
@@ -51,6 +61,7 @@ namespace avr
     class AT90USB162Mic : public AVRMic<ns>
     {
         public:
+            typedef AVRMic<ns> parent;
             typedef AT90USB162Mic M;
 
             typedef Port<AT90USB162Mic, 0x23> PortB;

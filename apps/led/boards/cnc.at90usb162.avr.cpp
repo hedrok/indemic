@@ -28,7 +28,7 @@ namespace Led
     // Hm... 62.5 (16 MHz crystal) * 8 (CKDIV8) ns
     typedef IndeMic::avr::AT90USB162Mic<500> M;
 
-    typedef IndeMic::avr::IOPin<M, M::PortC, 2> YellowLed;
+    typedef IndeMic::IOPin<M, M::PortC, 2> YellowLed;
 
     template<typename F>
     class MyRunner : public IndeMic::avr::PeriodicRunner<M, M::Timer1, F> {};

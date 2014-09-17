@@ -29,10 +29,10 @@
 /* 168 MHz  10^9 / (168 * 10^6) */
 typedef IndeMic::stm32::STM32F4Mic<6> M;
 
-typedef IndeMic::stm32::IOPin<M, M::PortD, 12> LedGreen;
-typedef IndeMic::stm32::IOPin<M, M::PortD, 13> LedOrange;
-typedef IndeMic::stm32::IOPin<M, M::PortD, 14> LedRed;
-typedef IndeMic::stm32::IOPin<M, M::PortD, 15> LedBlue;
+typedef IndeMic::IOPin<M, M::PortD, 12> LedGreen;
+typedef IndeMic::IOPin<M, M::PortD, 13> LedOrange;
+typedef IndeMic::IOPin<M, M::PortD, 14> LedRed;
+typedef IndeMic::IOPin<M, M::PortD, 15> LedBlue;
 
 /* Set STM32 to 168 MHz. */
 static void clock_setup(void)
