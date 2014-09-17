@@ -31,7 +31,7 @@ namespace Led
     typedef IndeMic::IOPin<M, M::PortC, 2> YellowLed;
 
     template<typename F>
-    class MyRunner : public IndeMic::avr::PeriodicRunner<M, M::Timer1, F> {};
+    class MyRunner : public IndeMic::PeriodicRunner<M, M::Timer1, F> {};
 };
 
 int main()

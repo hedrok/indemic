@@ -18,30 +18,22 @@
  */
 #pragma once
 
+#include <indemic/PeriodicRunner.h>
+#include <indemic/avr/AVRMic.h>
 #include <indemic/generic/std.h>
 #include <indemic/generic/RegisterBit.h>
 #include <indemic/generic/RegisterVisitor.h>
 
-
 namespace IndeMic
-{
-namespace avr
 {
 
 /**
- * PeriodicRunner
- * Runs function periodically.
- * It can be stopped or restored, period can be set
- * statically.
- *
- * @param Microcontroller
- * @param Timer - which timer to use
- * @param Functor - a class that should have static call
- *                  function that will be called periodically
+ * PeriodicRunner AVR implementation
  */
-template<typename M, typename Timer, typename Functor>
-class PeriodicRunner
+template<typename Timer, typename Functor, uint64_t ns>
+class PeriodicRunner<avr::AVRMic<ns>, Timer, Functor>
 {
+    typedef avr::AVRMic<ns> M;
     static_assert((Timer::template CompAInterrupt<Functor>::t == 1), "Something very wrong. This line should just instantiate Interrupt template");
     private:
         static constexpr uint64_t ocrValue(const uint64_t clocks, const uint64_t prescaler)
@@ -88,9 +80,9 @@ class PeriodicRunner
         }
 };
 
-template<typename M, typename Timer, typename Functor>
+template<typename Timer, typename Functor, uint64_t ns>
 template<uint64_t clocks, typename CsValue>
-class PeriodicRunner<M, Timer, Functor>::PeriodSetterHelper<clocks, CsValue, 1>
+class PeriodicRunner<avr::AVRMic<ns>, Timer, Functor>::PeriodSetterHelper<clocks, CsValue, 1>
 {
     public:
         static void f()
@@ -101,9 +93,9 @@ class PeriodicRunner<M, Timer, Functor>::PeriodSetterHelper<clocks, CsValue, 1>
         }
 };
 
-template<typename M, typename Timer, typename Functor>
+template<typename Timer, typename Functor, uint64_t ns>
 template<uint64_t clocks, typename CsValue>
-class PeriodicRunner<M, Timer, Functor>::PeriodSetterHelper<clocks, CsValue, 2>
+class PeriodicRunner<avr::AVRMic<ns>, Timer, Functor>::PeriodSetterHelper<clocks, CsValue, 2>
 {
     public:
         static void f()
@@ -112,5 +104,4 @@ class PeriodicRunner<M, Timer, Functor>::PeriodSetterHelper<clocks, CsValue, 2>
         }
 };
 
-}
 }
