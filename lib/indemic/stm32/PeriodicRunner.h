@@ -46,12 +46,21 @@ class PeriodicRunner<stm32::STM32Mic<ns>, Timer, Functor>
         template<uint64_t nanoseconds>
         static inline void setPeriod()
         {
-            // TODO: make timer generic
-            nvic_enable_irq(NVIC_TIM4_IRQ);
-            // TODO: calculate period by nanosecods parameter
-            RegisterVisitor::set<typename Timer::Ckd::template Value<3> >();
-            Timer::Arr::assign(60000);
-            Timer::Psc::assign(700 - 1);
+            // TODO: why period is two times larger than expected?
+            static_assert(nanoseconds > 2 * M::nsPerClock, "Run function each clock cycle is too dangerous");
+            constexpr uint64_t clocks = nanoseconds / M::nsPerClock;
+            constexpr uint8_t clockDivision = clocks / Timer::counterResolution / Timer::counterResolution;
+            static_assert(clockDivision < 4, "Period is too long"); 
+            constexpr uint8_t ckd =   (clockDivision < 1) ? 1 
+                                    : (clockDivision < 2) ? 2
+                                                          : 4;
+            constexpr uint8_t ckdValue = ckd - 1;
+            constexpr uint64_t pscValue = clocks / ckd / Timer::counterResolution;
+            constexpr uint64_t arrValue = clocks / ckd / (pscValue + 1);
+            RegisterVisitor::clear<typename Timer::Ckd>();
+            RegisterVisitor::set<typename Timer::Ckd::template Value<ckdValue> >();
+            Timer::Psc::assign(pscValue);
+            Timer::Arr::assign(arrValue);
         }
         static inline void clearCounter()
         {
@@ -59,6 +68,8 @@ class PeriodicRunner<stm32::STM32Mic<ns>, Timer, Functor>
         }
         static inline void enable()
         {
+            // TODO: make timer generic
+            nvic_enable_irq(NVIC_TIM4_IRQ);
             RegisterVisitor::set<typename Timer::Uie, typename Timer::CEn>();
         }
         static inline void disable()

@@ -31,7 +31,7 @@ namespace stm32
  * STM32 Timer
  */
 template<typename M, uint64_t base_address>
-class Timer
+class TimerBase
 {
     public:
         class Cr1 : public RegisterBase<M, base_address + 0x0, Cr1> {};
@@ -46,6 +46,21 @@ class Timer
         class Tie : public RegisterBit<Dier, 6> {};
         class Uie : public RegisterBit<Dier, 0> {};
 };
+class Timer16Bit
+{
+    public:
+        constexpr static uint8_t bits = 16;
+        constexpr static uint64_t counterResolution = 1 << bits;
+};
+
+template<typename M, uint64_t base_address>
+class Timer : public TimerBase<M, base_address>
+{};
+
+template<typename M>
+class Timer<M, TIM4> : public TimerBase<M, TIM4>, public Timer16Bit
+{};
+
 
 }
 }
