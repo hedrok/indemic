@@ -17,54 +17,41 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-// Copied from fancyblink.c from libopencm3-examples:
-// This file is added to test build system for stm32
-
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/gpio.h>
 
 #include <indemic/stm32/STM32F4Mic.h>
 #include <indemic/stm32/IOPin.h>
+#include <indemic/stm32/PeriodicRunner.h>
 
-/* 168 MHz  10^9 / (168 * 10^6) */
-typedef IndeMic::stm32::STM32F4Mic<6> M;
+#include "../HelloLed.h"
 
-typedef IndeMic::IOPin<M, M::PortD, 12> LedGreen;
-typedef IndeMic::IOPin<M, M::PortD, 13> LedOrange;
-typedef IndeMic::IOPin<M, M::PortD, 14> LedRed;
-typedef IndeMic::IOPin<M, M::PortD, 15> LedBlue;
-
-/* Set STM32 to 168 MHz. */
-static void clock_setup(void)
+namespace Led
 {
+    /* 168 MHz  10^9 / (168 * 10^6) */
+    typedef IndeMic::stm32::STM32F4Mic<6> M;
+
+    typedef IndeMic::IOPin<M, M::PortD, 12> LedGreen;
+    typedef IndeMic::IOPin<M, M::PortD, 13> LedOrange;
+    typedef IndeMic::IOPin<M, M::PortD, 14> LedRed;
+    typedef IndeMic::IOPin<M, M::PortD, 15> LedBlue;
+
+    template<typename F>
+    class MyRunner : public IndeMic::PeriodicRunner<M, M::Timer4, F> {};
+};
+
+// TODO: remove this, make change linker script like in AVR
+void tim4_isr()
+{
+    static uint8_t value = 1;
+    value ^= 1;
+    Led::LedRed::setValue(value);
+    TIM_SR(TIM4) &= ~TIM_SR_UIF; 
+}
+
+int main()
+{
+    /* Set STM32 to 168 MHz. */
 	rcc_clock_setup_hse_3v3(&hse_8mhz_3v3[CLOCK_3V3_168MHZ]);
-}
-
-static void gpio_setup(void)
-{
-    LedGreen::makeOutput();
-    LedOrange::makeOutput();
-    LedRed::makeOutput();
-    LedBlue::makeOutput();
-}
-
-int main(void)
-{
-	int i, v;
-
-	clock_setup();
-	gpio_setup();
-
-    v = 1;
-	while (1) {
-		/* Toggle LEDs. */
-        LedGreen::setValue(v);
-        LedBlue::setValue(v ^ 1);
-        v ^= 1;
-		for (i = 0; i < 6000000; i++) { /* Wait a bit. */
-			__asm__("nop");
-		}
-	}
-
-	return 0;
+    Led::LedRed::makeOutput();
+    HelloLed<Led::M, Led::LedBlue, Led::MyRunner>::main();
 }

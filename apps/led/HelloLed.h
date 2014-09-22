@@ -20,9 +20,7 @@
  * HelloLed using multi-platform library IndeMic
  */
 
-#include <avr/interrupt.h>
-
-template<typename Led, template<typename F> class PR >
+template<typename M, typename Led, template<typename F> class PR >
 class HelloLed
 {
 public:
@@ -46,8 +44,9 @@ public:
         PRF::template setPeriod<1000000000>();
         PRF::enable();
         PRF::clearCounter();
-        sei();
+        M::enableInterrupts();
         while (true) {
+            M::sleep();
         }
     }
 };

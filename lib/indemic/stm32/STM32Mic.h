@@ -21,6 +21,12 @@
  */
 #pragma once
 
+// This macro seems required to me. There are different names
+// and different attributes for different architectures, so
+// application can not just use some name like call.
+#define INDEMIC_INTERRUPT_FUNCTION_NAME indemic_interrupt
+#define INDEMIC_INTERRUPT_FUNCTION static void INDEMIC_INTERRUPT_FUNCTION_NAME() __attribute__((interrupt))
+
 namespace IndeMic
 {
 namespace stm32
@@ -32,21 +38,24 @@ namespace stm32
         public:
             enum {nsPerClock = ns};
 
-            typedef uint8_t register_value_t;
-            typedef volatile uint16_t register_double_t;
-            typedef uint16_t register_double_value_t;
+            typedef uint32_t register_value_t;
+            typedef volatile uint64_t register_double_t;
+            typedef uint64_t register_double_value_t;
 
             /** Represents type of pin index */
             typedef uint8_t pin_ind_t;
 
-            /** Represents type of PORT */
-            typedef volatile uint32_t& register_t;
+            /** Represents type of register */
+            typedef volatile uint32_t register_t;
 
             /** Represents type of port mask */
-            typedef uint32_t port_mask_t;
+            typedef uint64_t port_mask_t;
 
             /** Represents type of logic entry - high or low */
             typedef uint8_t logic_t;
+
+            inline static void enableInterrupts() {};
+            inline static void sleep() {};
     };
 }
 }

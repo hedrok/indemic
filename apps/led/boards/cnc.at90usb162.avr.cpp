@@ -36,5 +36,5 @@ namespace Led
 
 int main()
 {
-    HelloLed<Led::YellowLed, Led::MyRunner>::main();
+    HelloLed<Led::M, Led::YellowLed, Led::MyRunner>::main();
 }

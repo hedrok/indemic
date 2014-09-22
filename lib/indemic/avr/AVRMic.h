@@ -21,6 +21,8 @@
  */
 #pragma once
 
+#include <avr/interrupt.h>
+
 namespace IndeMic
 {
 namespace avr
@@ -45,6 +47,12 @@ namespace avr
             typedef uint8_t logic_t;
 
             enum {nsPerClock = ns};
+
+            inline static void sleep() {}
+            inline static void enableInterrupts()
+            {
+                sei();
+            }
     };
 }
 }

@@ -22,8 +22,10 @@
 #pragma once
 
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/timer.h>
 #include <indemic/stm32/STM32Mic.h>
 #include <indemic/stm32/Port.h>
+#include <indemic/stm32/Timer.h>
 
 namespace IndeMic
 {
@@ -40,6 +42,7 @@ namespace stm32
             typedef Port<M, GPIOC> PortC;
             typedef Port<M, GPIOD> PortD;
 
+            typedef Timer<M, TIM4> Timer4;
     };
 }
 }
