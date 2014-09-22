@@ -37,8 +37,7 @@ class PeriodicRunner<stm32::STM32Mic<ns>, Timer, Functor>
         static void initClock() __attribute__((constructor))
                                 __attribute__((used))
         {
-            // TODO: make timer generic
-            rcc_peripheral_enable_clock(&RCC_APB1ENR, RCC_APB1ENR_TIM4EN);
+            RegisterVisitor::set<typename Timer::RccEn>();
         }
         /**
          * Sets timer period to nanoseconds
@@ -68,8 +67,7 @@ class PeriodicRunner<stm32::STM32Mic<ns>, Timer, Functor>
         }
         static inline void enable()
         {
-            // TODO: make timer generic
-            nvic_enable_irq(NVIC_TIM4_IRQ);
+            nvic_enable_irq(Timer::irqNumber);
             RegisterVisitor::set<typename Timer::Uie, typename Timer::CEn>();
         }
         static inline void disable()

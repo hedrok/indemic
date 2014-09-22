@@ -23,6 +23,8 @@
 
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/timer.h>
+#include <libopencm3/cm3/nvic.h>
+
 #include <indemic/stm32/STM32Mic.h>
 #include <indemic/stm32/Port.h>
 #include <indemic/stm32/Timer.h>
@@ -42,7 +44,14 @@ namespace stm32
             typedef Port<M, GPIOC> PortC;
             typedef Port<M, GPIOD> PortD;
 
-            typedef Timer<M, TIM4> Timer4;
+            class RccApb1Enr : public RegisterBase<M, RCC_BASE + 0x40, RccApb1Enr> {};
+
+            class Timer4 : public Timer<M, TIM4>
+            {
+                public:
+                    class RccEn : public RegisterBit<RccApb1Enr, 2> {};
+                    enum { irqNumber = NVIC_TIM4_IRQ };
+            };
     };
 }
 }
