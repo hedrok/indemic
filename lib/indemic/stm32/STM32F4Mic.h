@@ -46,7 +46,7 @@ namespace stm32
 
             class RccApb1Enr : public RegisterBase<M, RCC_BASE + 0x40, RccApb1Enr> {};
 
-            class Timer4 : public Timer<M, TIM4>
+            class Timer4 : public TimerBase<M, TIM4, 16, InterruptTimer4>
             {
                 public:
                     class RccEn : public RegisterBit<RccApb1Enr, 2> {};

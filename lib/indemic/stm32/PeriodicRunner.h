@@ -74,6 +74,16 @@ class PeriodicRunner<stm32::STM32Mic<ns>, Timer, Functor>
         {
             RegisterVisitor::clear<typename Timer::Uie, typename Timer::CEn>();
         }
+        class WrapperFunctor
+        {
+            public:
+                INDEMIC_INTERRUPT_FUNCTION __attribute__((interrupt)) __attribute__((used))
+                {
+                    RegisterVisitor::clear<typename Timer::Uif>();
+                    Functor::INDEMIC_INTERRUPT_FUNCTION_NAME();
+                }
+        };
+        static_assert(Timer::template Interrupt<WrapperFunctor>::t == 1, "instantiate Interrupt::interrupt");
 };
 
 }

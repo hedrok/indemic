@@ -30,12 +30,13 @@ namespace stm32
 /**
  * STM32 Timer
  */
-template<typename M, uint64_t base_address>
+template<typename M, uint64_t base_address, uint8_t _bits, template<typename> class InterruptTemplate >
 class TimerBase
 {
     public:
         class Cr1 : public RegisterBase<M, base_address + 0x0, Cr1> {};
         class Dier : public RegisterBase<M, base_address + 0x0c, Dier> {};
+        class Sr : public RegisterBase<M, base_address + 0x10, Sr> {};
         class Cnt : public RegisterSettable<M, base_address + 0x24, Cnt> {};
         class Psc : public RegisterSettable<M, base_address + 0x28, Psc> {};
         class Arr : public RegisterSettable<M, base_address + 0x2c, Arr> {};
@@ -43,23 +44,32 @@ class TimerBase
         class Ckd : public RegisterBit<Cr1, 8, 3> {};
         class CEn : public RegisterBit<Cr1, 0> {};
 
+        class Uif : public RegisterBit<Sr, 0> {};
+
         class Tie : public RegisterBit<Dier, 6> {};
         class Uie : public RegisterBit<Dier, 0> {};
+
+        constexpr static uint8_t bits = _bits;
+        constexpr static uint64_t counterResolution = 1 << bits;
+
+        template<typename F>
+        using Interrupt = InterruptTemplate<F>;
 };
-class Timer16Bit
+
+template<typename Functor>
+class InterruptTimer4
 {
     public:
-        constexpr static uint8_t bits = 16;
-        constexpr static uint64_t counterResolution = 1 << bits;
+        enum {t = 1};
+        static __attribute__ ((used))
+               __attribute__ ((section (".indemic_timer4_interrupt")))
+               void (*interrupt)(void);
 };
-
-template<typename M, uint64_t base_address>
-class Timer : public TimerBase<M, base_address>
-{};
-
-template<typename M>
-class Timer<M, TIM4> : public TimerBase<M, TIM4>, public Timer16Bit
-{};
+template<typename Functor>
+__attribute__ ((used))
+__attribute__ ((section (".indemic_timer4_interrupt")))
+void (*InterruptTimer4<Functor>::interrupt)(void)
+= Functor::INDEMIC_INTERRUPT_FUNCTION_NAME;
 
 
 }

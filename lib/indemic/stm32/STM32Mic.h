@@ -25,7 +25,7 @@
 // and different attributes for different architectures, so
 // application can not just use some name like call.
 #define INDEMIC_INTERRUPT_FUNCTION_NAME indemic_interrupt
-#define INDEMIC_INTERRUPT_FUNCTION static void INDEMIC_INTERRUPT_FUNCTION_NAME() __attribute__((interrupt))
+#define INDEMIC_INTERRUPT_FUNCTION static void INDEMIC_INTERRUPT_FUNCTION_NAME()
 
 namespace IndeMic
 {
