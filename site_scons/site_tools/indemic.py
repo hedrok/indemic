@@ -228,7 +228,7 @@ class LinkerScriptBuilder:
 
     def __call__(self, env, target, source = None):
         """
-        Call as builder for scons. 
+        Call as builder for scons.
 
         @param target List of targets, currently only one target is supported.
                       It should have name like name.micro.arch.x
@@ -308,6 +308,182 @@ class LinkerScriptBuilder:
         if micro not in self.linkerScripts[architecture]:
             self.linkerScripts[architecture][micro] = self.env.LinkerScript(path, [])
         return self.linkerScripts[architecture][micro]
+
+class ElfPatcherBuilder:
+    """
+    Builder for patching elf with indemic interrupts.
+    Gets interrupt addresses from special sections in elf,
+    and places it to proper place in vector table
+    """
+    def __init__(self, family, interruptLength):
+        self.env = Environment(
+            BUILDERS = {
+                'PatchedElf': Builder(
+                    action = self
+                )
+            },
+            tools = ['textfile'],
+            ENV = {'PATH' : os.environ['PATH']},
+        )
+        self._interruptLength = interruptLength
+        self._family = family
+
+        self._vectorTableSection = '.text'
+        self._interruptsByMicro = {}
+        self._filepathByMicro = None
+        self._interruptsPath = '#lib/indemic/interrupts'
+
+
+    def __call__(self, env, target, source):
+        """
+        Call as builder for scons.
+
+        @param target List of targets, currently only one target is supported.
+                      It should have name like name.micro.arch.elf
+        @param source Unpatched elf file
+        @param env    Scons env, should be self.env
+        @return Patched elf node
+        """
+        src = source[0].path
+        tgt = target[0].path
+
+        sections = self._getSectionsInfo(src)
+        (family, micro) = parsePath(tgt)
+        interrupts = self._getInterruptsByMicro(micro)
+
+        shutil.copyfile(src, tgt)
+        lastpos = 0
+        with open(tgt, 'rb+') as f:
+            for i in interrupts:
+                if i['name'] not in sections:
+                    continue
+
+                command = 'arm-none-eabi-objcopy -j ' + i['name'] + ' -O binary ' + src
+                v = getCommandOutput(command, None, ' ')
+                if len(v) != self._interruptLength:
+                    SCons.Warnings.warn(
+                        ToolIndeMicWarning,
+                        tgt + ": interrupt " + i['name'] + " has wrong size " + len(v) + "\n"
+                        "expected " + self._interruptLength + "\n"
+                    )
+                    Exit(1)
+                offs = sections[self._vectorTableSection] + i['offset']
+                f.seek(offs - lastpos)
+                f.write(v)
+                lastpos += offs + len(v)
+
+    def getNode(self, target, source):
+        return self.env.PatchedElf(target, source)
+
+    def _getSectionsInfo(self, path):
+        command = 'arm-none-eabi-objdump -h ' + path
+        sections = getCommandOutput(command)
+        #Sections:
+        #Idx Name          Size      VMA       LMA       File off  Algn
+        #  0 .text         000031b8  08000000  08000000  00008000  2**2
+        #                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+        #  1 .init_array   00000008  080031b8  080031b8  0000b1b8  2**2
+        #                  CONTENTS, ALLOC, LOAD, DATA
+        sectionsMap = {}
+        for line in sections.split('\n'):
+            parts = line.split()
+            if len(parts) != 7:
+                continue
+            if not parts[0].isdigit():
+                continue
+            sectionsMap[parts[1]] = int(parts[5], 16)
+        return sectionsMap
+
+    def _getInterruptsByMicro(self, micro):
+        """
+        Gets interrupt info for microcontroller
+
+        TODO: configure path to interrupts list
+        @param family e.g. avr
+        @param micro e.g. at90usb162
+        @returns List of interrupts, each interrupt is
+                 described by map with two elements:
+                 name and offset.
+        """
+        if micro in self._interruptsByMicro:
+            return self._interruptsByMicro
+
+        if self._filepathByMicro is None:
+            self._initFilepathByMicro()
+
+        if micro not in self._filepathByMicro:
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "_getInterruptsByMicro: Unknown microcontroller '" + micro
+                + "' for family '" + self._family + "'"
+            )
+            Exit(1)
+
+        filename = self._filepathByMicro[micro] + '.interrupts'
+        intFile = File(self._interruptsPath + '/' + self._family + '/' + filename)
+        content = ''
+
+        ret = []
+        with open(intFile.abspath) as f:
+            if not f:
+                SCons.Warnings.warn(
+                    ToolIndeMicWarning,
+                    "Could not open file: " + intFile.abspath
+                )
+                Exit(1)
+
+            offset = 0
+            for line in f:
+                if line[0] == '#':
+                    continue
+                if line == '\n':
+                    continue
+                parts = line.split()
+                if len(parts) > 2:
+                    SCons.Warnings.warn(
+                        ToolIndeMicWarning,
+                        "Wrong format in file " + intFile.abspath + ": " + line
+                    )
+                    Exit(1)
+                if len(parts) == 2:
+                    offset = int(parts[1], 16)
+                else:
+                    offset += self._interruptLength
+                ret += [{
+                    'name': parts[0],
+                    'offset': offset
+                }]
+        self._interruptsByMicro[micro] = ret
+        return ret
+
+    def _initFilepathByMicro(self):
+        if self._filepathByMicro:
+            return
+        fpm = {}
+
+        dictfile = File(self._interruptsPath + '/' + self._family + '/dict')
+        with open(dictfile.abspath) as df:
+            if not df:
+                SCons.Warnings.warn(
+                        ToolIndeMicWarning,
+                        "Could not opent file: " + dictfile.abspath
+                )
+                Exit(1)
+            for line in df:
+                if line[0] == '#':
+                    continue
+                if line == '\n':
+                    continue
+                parts = line.split()
+                if len(parts) > 2:
+                    SCons.Warnings.warn(
+                        ToolIndeMicWarning,
+                        "Wrong dict format: '" + line + "' in file " + dictfile.abspath
+                    )
+                    Exit(1)
+                fpm[parts[0]] = parts[1]
+        self._filepathByMicro = fpm
+
 
 class BaseFamily:
     def __init__(self):
@@ -408,7 +584,7 @@ class AVRFamily(BaseFamily):
         @param micro e.g. at90usb162
         """
         if not self._env:
-            return None 
+            return None
 
         cflags = '-mmcu=' + micro
         ldflags = cflags + ' -T' + self.linkerBuilder.getNode(self.getName(), micro)[0].abspath
@@ -443,182 +619,6 @@ class AVRFamilySimAVR(AVRFamily):
         self._builders['indemicBoardSimAvr'] = indemicBoardSimAvr
     def getBuilders(self):
         return self._builders
-
-class ElfPatcherBuilder:
-    """
-    Builder for patching elf with indemic interrupts.
-    Gets interrupt addresses from special sections in elf,
-    and places it to proper place in vector table
-    """
-    def __init__(self, family, interruptLength):
-        self.env = Environment(
-            BUILDERS = {
-                'PatchedElf': Builder(
-                    action = self
-                )
-            },
-            tools = ['textfile'],
-            ENV = {'PATH' : os.environ['PATH']},
-        )
-        self._interruptLength = interruptLength
-        self._family = family
-
-        self._vectorTableSection = '.text'
-        self._interruptsByMicro = {}
-        self._filepathByMicro = None
-        self._interruptsPath = '#lib/indemic/interrupts'
-
-
-    def __call__(self, env, target, source):
-        """
-        Call as builder for scons. 
-
-        @param target List of targets, currently only one target is supported.
-                      It should have name like name.micro.arch.elf
-        @param source Unpatched elf file
-        @param env    Scons env, should be self.env
-        @return Patched elf node
-        """
-        src = source[0].path
-        tgt = target[0].path
-
-        sections = self._getSectionsInfo(src)
-        (family, micro) = parsePath(tgt)
-        interrupts = self._getInterruptsByMicro(micro)
-
-        shutil.copyfile(src, tgt)
-        lastpos = 0
-        with open(tgt, 'rb+') as f:
-            for i in interrupts:
-                if i['name'] not in sections:
-                    continue
-
-                command = 'arm-none-eabi-objcopy -j ' + i['name'] + ' -O binary ' + src
-                v = getCommandOutput(command, None, ' ')
-                if len(v) != self._interruptLength:
-                    SCons.Warnings.warn(
-                        ToolIndeMicWarning,
-                        tgt + ": interrupt " + i['name'] + " has wrong size " + len(v) + "\n"
-                        "expected " + self._interruptLength + "\n"
-                    )
-                    Exit(1)
-                offs = sections[self._vectorTableSection] + i['offset']
-                f.seek(offs - lastpos)
-                f.write(v)
-                lastpos += offs + len(v)
-
-    def getNode(self, target, source):
-        return self.env.PatchedElf(target, source)
-
-    def _getSectionsInfo(self, path):
-        command = 'arm-none-eabi-objdump -h ' + path
-        sections = getCommandOutput(command)
-        #Sections:
-        #Idx Name          Size      VMA       LMA       File off  Algn
-        #  0 .text         000031b8  08000000  08000000  00008000  2**2
-        #                  CONTENTS, ALLOC, LOAD, READONLY, CODE
-        #  1 .init_array   00000008  080031b8  080031b8  0000b1b8  2**2
-        #                  CONTENTS, ALLOC, LOAD, DATA
-        sectionsMap = {}
-        for line in sections.split('\n'):
-            parts = line.split()
-            if len(parts) != 7:
-                continue
-            if not parts[0].isdigit():
-                continue
-            sectionsMap[parts[1]] = int(parts[5], 16)
-        return sectionsMap
-
-    def _getInterruptsByMicro(self, micro):
-        """
-        Gets interrupt info for microcontroller
-
-        TODO: configure path to interrupts list
-        @param family e.g. avr
-        @param micro e.g. at90usb162
-        @returns List of interrupts, each interrupt is
-                 described by map with two elements:
-                 name and offset.
-        """
-        if micro in self._interruptsByMicro:
-            return self._interruptsByMicro
-
-        if self._filepathByMicro is None:
-            self._initFilepathByMicro()
-
-        if micro not in self._filepathByMicro:
-            SCons.Warnings.warn(
-                ToolIndeMicWarning,
-                "_getInterruptsByMicro: Unknown microcontroller '" + micro 
-                + "' for family '" + self._family + "'"
-            )
-            Exit(1)
-
-        filename = self._filepathByMicro[micro] + '.interrupts'
-        intFile = File(self._interruptsPath + '/' + self._family + '/' + filename)
-        content = ''
-
-        ret = []
-        with open(intFile.abspath) as f:
-            if not f:
-                SCons.Warnings.warn(
-                    ToolIndeMicWarning,
-                    "Could not open file: " + intFile.abspath
-                )
-                Exit(1)
-
-            offset = 0
-            for line in f:
-                if line[0] == '#':
-                    continue
-                if line == '\n':
-                    continue
-                parts = line.split()
-                if len(parts) > 2:
-                    SCons.Warnings.warn(
-                        ToolIndeMicWarning,
-                        "Wrong format in file " + intFile.abspath + ": " + line
-                    )
-                    Exit(1)
-                if len(parts) == 2:
-                    offset = int(parts[1], 16)
-                else:
-                    offset += self._interruptLength
-                ret += [{
-                    'name': parts[0],
-                    'offset': offset
-                }]
-        self._interruptsByMicro[micro] = ret
-        return ret
-
-    def _initFilepathByMicro(self):
-        if self._filepathByMicro:
-            return
-        fpm = {}
-
-        dictfile = File(self._interruptsPath + '/' + self._family + '/dict')
-        with open(dictfile.abspath) as df:
-            if not df:
-                SCons.Warnings.warn(
-                        ToolIndeMicWarning,
-                        "Could not opent file: " + dictfile.abspath
-                )
-                Exit(1)
-            for line in df:
-                if line[0] == '#':
-                    continue
-                if line == '\n':
-                    continue
-                parts = line.split()
-                if len(parts) > 2:
-                    SCons.Warnings.warn(
-                        ToolIndeMicWarning,
-                        "Wrong dict format: '" + line + "' in file " + dictfile.abspath
-                    )
-                    Exit(1)
-                fpm[parts[0]] = parts[1]
-        self._filepathByMicro = fpm
-
 
 libopencm3_root = '/opt/libopencm3'
 class STM32Family(BaseFamily):
