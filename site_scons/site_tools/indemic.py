@@ -6,7 +6,7 @@
 # == About ==
 #
 # This builder selects mcu by filename and generates linker script for that
-# mcu (currently only AVR is supported)
+# mcu (currently only AVR and STM32 are supported)
 #
 # == Usage: ==
 #
@@ -22,8 +22,15 @@
 from SCons.Script import *
 from SCons.Builder import Builder
 import os
+import shutil
+import tempfile
 
 def parsePath(path):
+    """
+    Gets family and microcontroller by filename
+    @param path - filename of form some.micro.family.elf
+    @returns tuple (family, micro)
+    """
     parts = path.split('.')
     if len(parts) < 3:
         SCons.Warnings.warn(
@@ -33,7 +40,48 @@ def parsePath(path):
             "Got filename: " + target[0]
         )
         Exit(1)
-    return [parts[-2], parts[-3]]
+    return (parts[-2], parts[-3])
+
+def getCommandOutput(command, grep = None, redirectString = ' > '):
+    """
+    gets output from command
+    @param command - command to run
+    @param grep - if not None, filter output of command like grep does,
+                  grep string in this parameter
+    @param redirectString - Output of command is redirected to file internally,
+                            by default it is done via adding ' > ' and filename
+                            to command. Caller can chage this by changing this
+                            parameter.
+    @returns Output of 'command' (possibly filtered by 'grep')
+    """
+    fileTemp = tempfile.NamedTemporaryFile(delete = False)
+    fileTemp.close()
+    command += redirectString + fileTemp.name
+    env = Environment(
+        ENV = {'PATH' : os.environ['PATH']},
+    )
+    if env.Execute(command):
+        SCons.Warnings.warn(
+            ToolIndeMicWarning,
+            "Failed to execute: '" + command + "'"
+        )
+        Exit(1)
+    ret = ''
+    with open(fileTemp.name) as output:
+        if not output:
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "Could not open temp file with command output: " + fileTemp.name
+            )
+            Exit(1)
+        if grep is None:
+            ret = output.read(os.path.getsize(fileTemp.name))
+        else:
+            for line in output:
+                if grep in line:
+                    ret += line
+    os.remove(fileTemp.name)
+    return ret
 
 class LinkerScriptBuilder:
     """
@@ -347,7 +395,7 @@ class AVRFamily(BaseFamily):
 
     def _postCreateProgNode(self, menv, prog, micro, target, sources):
         family = self.getName()
-        [family, micro] = parsePath(prog[0].abspath)
+        (family, micro) = parsePath(prog[0].abspath)
         Depends(prog, self.linkerBuilder.getNode(family, micro))
 
     def _initMicro(self, micro):
@@ -396,8 +444,63 @@ class AVRFamilySimAVR(AVRFamily):
     def getBuilders(self):
         return self._builders
 
+class ElfPatcherBuilder:
+    """
+    Builder for patching elf with indemic interrupts.
+    Gets interrupt addresses from special sections in elf,
+    and places it to proper place in vector table
+    """
+    def __init__(self):
+        self.env = Environment(
+            BUILDERS = {
+                'PatchedElf': Builder(
+                    action = self
+                )
+            },
+            tools = ['textfile'],
+            ENV = {'PATH' : os.environ['PATH']},
+        )
+
+    def __call__(self, env, target, source):
+        """
+        Call as builder for scons. 
+
+        @param target List of targets, currently only one target is supported.
+                      It should have name like name.micro.arch.elf
+        @param source Unpatched elf file
+        @param env    Scons env, should be self.env
+        @return Patched elf node
+        """
+        src = source[0].path
+
+        command = 'arm-none-eabi-objdump -h ' + src
+        textSection = getCommandOutput(command, '.text')
+        #  0 .text         00003208  08000000  08000000  00008000  2**2
+        offset = textSection.split()[5]
+        offset = int(offset, 16)
+
+        #TODO: of course this is just temporary solution.
+        interrupt_name = '.indemic_interrupt_timer4'
+        command = 'arm-none-eabi-objcopy -j ' + interrupt_name + ' -O binary ' + src
+        timer4 = getCommandOutput(command, None, ' ')
+
+        timer4_interrupt_offset = 0xb8
+
+        offs = offset + timer4_interrupt_offset
+        shutil.copyfile(source[0].abspath, target[0].abspath)
+
+        with open(target[0].abspath, 'rb+') as f:
+            f.seek(offs)
+            f.write(timer4)
+
+    def getNode(self, target, source):
+        return self.env.PatchedElf(target, source)
+
 libopencm3_root = '/opt/libopencm3'
 class STM32Family(BaseFamily):
+
+    elfPatcher = ElfPatcherBuilder()
+
     def __init__(self):
         BaseFamily.__init__(self)
         self._initEnv('arm-none-eabi')
@@ -417,6 +520,12 @@ class STM32Family(BaseFamily):
         return self._env
     def getBuilders(self):
         return {}
+
+    def _createProgNode(self, menv, target, sources):
+        # Adding suffix so that nobody tries to flash it
+        # and indemic_flash won't find it this way
+        unpatched = menv.Program('unpatched-' + target[0] + '.tmp', sources)
+        return self.elfPatcher.getNode(target, unpatched)
 
     def _initMicro(self, micro):
         if micro[:6] != 'stm32f':
@@ -489,7 +598,7 @@ class IndemicBoardBuilder:
         """
 
         target = Flatten(Split(target))
-        [family, micro] = parsePath(target[0])
+        (family, micro) = parsePath(target[0])
 
         if family not in self.families:
             SCons.Warnings.warn(

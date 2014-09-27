@@ -39,19 +39,9 @@ namespace Led
     class MyRunner : public IndeMic::PeriodicRunner<M, M::Timer4, F> {};
 };
 
-// TODO: remove this, make change linker script like in AVR
-void tim4_isr()
-{
-    static uint8_t value = 1;
-    value ^= 1;
-    Led::LedRed::setValue(value);
-    TIM_SR(TIM4) &= ~TIM_SR_UIF; 
-}
-
 int main()
 {
     /* Set STM32 to 168 MHz. */
 	rcc_clock_setup_hse_3v3(&hse_8mhz_3v3[CLOCK_3V3_168MHZ]);
-    Led::LedRed::makeOutput();
-    HelloLed<Led::M, Led::LedBlue, Led::MyRunner>::main();
+    HelloLed<Led::M, Led::LedGreen, Led::MyRunner>::main();
 }
