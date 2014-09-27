@@ -271,17 +271,23 @@ class BaseFamily:
     def getBuilders(self):
         return self._builders
     def createProgramNode(self, micro, target, sources):
-        if micro not in self._envByMicro:
-            self._envByMicro[micro] = self.initMicro(micro)
-        menv = self._envByMicro[micro]
-        prog = menv.Program(target, sources)
+        menv = self._getEnvByMicro(micro)
+        prog = self._createProgNode(menv, target, sources)
         menv.Hex(prog)
         menv.Asm(prog)
+        prog = self._postCreateProgNode(menv, prog, micro, target, sources)
         return prog
-    def initMicro(self):
+
+    def _postCreateProgNode(self, menv, prog, micro, target, sources):
+        pass
+    def _createProgNode(self, menv, target, sources):
+        return menv.Program(target, sources)
+    def _getEnvByMicro(self, micro):
+        if micro not in self._envByMicro:
+            self._envByMicro[micro] = self._initMicro(micro)
+        return self._envByMicro[micro]
+    def _initMicro(self, micro):
         raise NotMiplementedError()
-
-
     def _initEnv(self, toolchain_prefix):
         """
         Initializes self._env by toolchain prefix
@@ -339,12 +345,12 @@ class AVRFamily(BaseFamily):
     def getBuilders(self):
         return self.simavr.getBuilders()
 
-    def createProgramNode(self, micro, target, sources):
-        prog = BaseFamily.createProgramNode(self, micro, target, sources)
+    def _postCreateProgNode(self, menv, prog, micro, target, sources):
+        family = self.getName()
         [family, micro] = parsePath(prog[0].abspath)
         Depends(prog, self.linkerBuilder.getNode(family, micro))
 
-    def initMicro(self, micro):
+    def _initMicro(self, micro):
         """
         Initializes internal fields for new microcontroller
         Creates new environment with -mmcu flag, adds -T flag with
@@ -412,7 +418,7 @@ class STM32Family(BaseFamily):
     def getBuilders(self):
         return {}
 
-    def initMicro(self, micro):
+    def _initMicro(self, micro):
         if micro[:6] != 'stm32f':
             SCons.Warnings.warn(
                 ToolIndeMicWarning,
