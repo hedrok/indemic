@@ -262,14 +262,22 @@ class LinkerScriptBuilder:
         return self.linkerScripts[architecture][micro]
 
 class BaseFamily:
+    def __init__(self):
+        self._envByMicro = {}
     def getName(self):
         raise NotImplementedError()
     def getEnv(self):
         return self._env
     def getBuilders(self):
         return self._builders
-    def postProcessProgramNode(self, prog):
-        pass
+    def createProgramNode(self, micro, target, sources):
+        if micro not in self._envByMicro:
+            self._envByMicro[micro] = self.initMicro(micro)
+        menv = self._envByMicro[micro]
+        prog = menv.Program(target, sources)
+        menv.Hex(prog)
+        menv.Asm(prog)
+        return prog
     def initMicro(self):
         raise NotMiplementedError()
 
@@ -312,6 +320,7 @@ class AVRFamily(BaseFamily):
         Append builders to environment
         TODO: remove hardcoded path to indemic library
         """
+        BaseFamily.__init__(self)
         self._initEnv('avr')
 
         conf = Configure(self._env)
@@ -330,7 +339,8 @@ class AVRFamily(BaseFamily):
     def getBuilders(self):
         return self.simavr.getBuilders()
 
-    def postProcessProgramNode(self, prog):
+    def createProgramNode(self, micro, target, sources):
+        prog = BaseFamily.createProgramNode(self, micro, target, sources)
         [family, micro] = parsePath(prog[0].abspath)
         Depends(prog, self.linkerBuilder.getNode(family, micro))
 
@@ -358,6 +368,8 @@ class AVRFamily(BaseFamily):
 
 class AVRFamilySimAVR(AVRFamily):
     def __init__(self):
+        # TODO: this is lame, think about soething normal
+        BaseFamily.__init__(self)
         self._builders = {}
         self._initEnv('avr')
         def CheckPKG(context, name):
@@ -381,6 +393,7 @@ class AVRFamilySimAVR(AVRFamily):
 libopencm3_root = '/opt/libopencm3'
 class STM32Family(BaseFamily):
     def __init__(self):
+        BaseFamily.__init__(self)
         self._initEnv('arm-none-eabi')
         self._env.Append(
             CPPPATH = [libopencm3_root + '/arm-none-eabi/include'],
@@ -486,15 +499,7 @@ class IndemicBoardBuilder:
             )
             return None
 
-        if micro not in self.envByMicro[family]:
-            self.envByMicro[family][micro] = self.families[family].initMicro(micro)
-        
-        menv = self.envByMicro[family][micro]
-        prog = menv.Program(target, sources)
-        menv.Hex(prog)
-        menv.Asm(prog)
-
-        self.families[family].postProcessProgramNode(prog)
+        prog = self.families[family].createProgramNode(micro, target, sources)
 
         return prog
 
