@@ -62,12 +62,12 @@ class InterruptTimer4
     public:
         enum {t = 1};
         static __attribute__ ((used))
-               __attribute__ ((section (".indemic_interrupt_timer4")))
+               __attribute__ ((section (".indemic_interrupt_tim4")))
                void (*interrupt)(void);
 };
 template<typename Functor>
 __attribute__ ((used))
-__attribute__ ((section (".indemic_interrupt_timer4")))
+__attribute__ ((section (".indemic_interrupt_tim4")))
 void (*InterruptTimer4<Functor>::interrupt)(void)
 = Functor::INDEMIC_INTERRUPT_FUNCTION_NAME;
 
