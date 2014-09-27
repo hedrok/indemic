@@ -90,7 +90,7 @@ def searchFirmware(dirs):
     if not hasattr(searchFirmware, 'p'):
         suffixes = [f.getSuffix() for f in flashersList]
         suffixes = '|'.join(suffixes)
-        searchFirmware.p = re.compile('.*\.[^.]*\.(' + suffixes + ')')
+        searchFirmware.p = re.compile('.*\.[^.]*\.(' + suffixes + ')$')
     lst = []
     for d in dirs:
         if not os.path.isdir(d):
