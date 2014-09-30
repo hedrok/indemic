@@ -13,7 +13,10 @@ class BaseFlasher:
         pass
 
 class AVRFlasher:
-    def flash(self, filename):
+    def __init__(self):
+       self.microDict = False
+
+    def flash(self, micro, filename):
         """
         Flashes AVR microcontroller
         @param micro Microcontroller name understood by GCC
@@ -21,7 +24,7 @@ class AVRFlasher:
         @returns True on success
         """
         #avrdude -c avrftdi -pusb162 -U flash:w:out/avrboard-cnc.hex
-        if not hasattr(flashAvr, 'microDict'):
+        if not self.microDict:
             d = {}
             f = os.popen("avrdude -cavrftdi 2>&1")
             for line in f:
@@ -34,13 +37,13 @@ class AVRFlasher:
                 code = parts[0].strip()
                 d[m] = code
             f.close()
-            flashAvr.microDict = d
-        if micro not in flashAvr.microDict:
+            self.microDict = d
+        if micro not in self.microDict:
             print("Unknown microcontroller: " + micro + " for avrdude")
             return False
-        command = "avrdude -cavrftdi -p" + flashAvr.microDict[micro] + " -U flash:w:" + filename
+        command = "avrdude -cavrftdi -p" + self.microDict[micro] + " -U flash:w:" + filename
         print "Executing '" + command + "'"
-        os.execvp("avrdude", ['avrdude', '-cavrftdi', '-p', flashAvr.microDict[micro], '-U', 'flash:w:' + filename])
+        os.execvp("avrdude", ['avrdude', '-cavrftdi', '-p', self.microDict[micro], '-U', 'flash:w:' + filename])
         return True
     def getSuffix(self):
         return 'avr.hex'
