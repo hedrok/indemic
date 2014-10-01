@@ -46,7 +46,48 @@ namespace stm32
             typedef Port<M, GPIOC> PortC;
             typedef Port<M, GPIOD> PortD;
 
+            class RccCr      : public RegisterBase<M, RCC_BASE + 0x00, RccCr> {};
+            class RccPllCfgr : public RegisterBase<M, RCC_BASE + 0x04, RccPllCfgr> {};
+            class RccCfgr    : public RegisterBase<M, RCC_BASE + 0x08, RccCfgr> {};
             class RccApb1Enr : public RegisterBase<M, RCC_BASE + 0x40, RccApb1Enr> {};
+
+            class RccCrHsiOn  : public RegisterBit<RccCr,  0> {};
+            class RccCrHsiRdy : public RegisterBit<RccCr,  1> {};
+            class RccCrHseOn  : public RegisterBit<RccCr, 16> {};
+            class RccCrHseRdy : public RegisterBit<RccCr, 17> {};
+            class RccCrPllOn  : public RegisterBit<RccCr, 24> {};
+            class RccCrPllRdy : public RegisterBit<RccCr, 25> {};
+
+            class RccPllCfgrQ   : public RegisterBit<RccPllCfgr, 24, 4> {};
+            class RccPllCfgrSrc : public RegisterBit<RccPllCfgr, 22   >
+            {
+                public:
+                    using B   = RegisterBit<RccPllCfgr, 22>;
+                    using Hsi = typename B::template Value<0>;
+                    using Hse = typename B::template Value<1>;
+            };
+            class RccPllCfgrP   : public RegisterBit<RccPllCfgr, 16, 2> {};
+            class RccPllCfgrN   : public RegisterBit<RccPllCfgr,  6, 9> {};
+            class RccPllCfgrM   : public RegisterBit<RccPllCfgr,  0, 6> {};
+
+            class RccCfgrPpre2 : public RegisterBit<RccCfgr, 13, 3> {};
+            class RccCfgrPpre1 : public RegisterBit<RccCfgr, 10, 3> {};
+            class RccCfgrSws   : public RegisterBit<RccCfgr,  2, 2>
+            {
+                public:
+                    using B   =  RegisterBit<RccCfgr, 2, 2>;
+                    using Hsi = typename B::template Value<0>;
+                    using Hse = typename B::template Value<1>;
+                    using Pll = typename B::template Value<2>;
+            };
+            class RccCfgrSw : public RegisterBit<RccCfgr, 0, 2>
+            {
+                public:
+                    using B = RegisterBit<RccCfgr, 0, 2>;
+                    using Hsi = typename B::template Value<0>;
+                    using Hse = typename B::template Value<1>;
+                    using Pll = typename B::template Value<2>;
+            };
 
             class Timer4 : public TimerBase<M, TIM4, 16, InterruptTimer4, Clock::APB1TimerFreq>
             {

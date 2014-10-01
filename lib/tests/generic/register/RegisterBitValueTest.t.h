@@ -12,12 +12,12 @@ class RegisterBitValueTestSuite : public CxxTest::TestSuite
         {
             uint8_t &pseudoregister1 = TCCR0A::value;
             TCCR0A::set(1 << 7 | 1 << 5 | 1 << 1);
-            TS_ASSERT_EQUALS(TCCR0A::COM0A::getValue(), 2);
-            TS_ASSERT_EQUALS(TCCR0A::COM0B1::getValue(), 1);
-            TS_ASSERT_EQUALS(TCCR0A::COM0B0::getValue(), 0);
-            TS_ASSERT_EQUALS(TCCR0A::WGM01::getValue(), 1);
-            TS_ASSERT_EQUALS(TCCR0A::WGM00::getValue(), 0);
-            TS_ASSERT_EQUALS(TCCR0A::COM0A::getValueUnshifted(), 1 << 7);
+            TS_ASSERT_EQUALS(TCCR0A::COM0A::getBitsValue(), 2);
+            TS_ASSERT_EQUALS(TCCR0A::COM0B1::getBitsValue(), 1);
+            TS_ASSERT_EQUALS(TCCR0A::COM0B0::getBitsValue(), 0);
+            TS_ASSERT_EQUALS(TCCR0A::WGM01::getBitsValue(), 1);
+            TS_ASSERT_EQUALS(TCCR0A::WGM00::getBitsValue(), 0);
+            TS_ASSERT_EQUALS(TCCR0A::COM0A::getValue(), 1 << 7);
         }
         class TestMicrocontroller
         {

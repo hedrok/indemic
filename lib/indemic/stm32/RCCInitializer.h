@@ -20,6 +20,8 @@
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/flash.h>
+#include <indemic/generic/RegisterBit.h>
+#include <indemic/generic/RegisterVisitor.h>
 
 namespace IndeMic
 {
@@ -74,15 +76,14 @@ class RCCInitializerSTM32F4
 
         }
 
-        //TODO: change libopencm3 registers and bits to indemic ones
         static void initRCC() __attribute__((constructor))
                               __attribute__((used))
         {
             // turn on HSI and HSE
-            RCC_CR |= RCC_CR_HSION;
-            while ((RCC_CR & RCC_CR_HSIRDY) == 0);
-            RCC_CR |= RCC_CR_HSEON;
-            while ((RCC_CR & RCC_CR_HSERDY) == 0);
+            RegisterVisitor::set<typename M::RccCrHsiOn>();
+            while (M::RccCrHsiRdy::getValue() == 0);
+            RegisterVisitor::set<typename M::RccCrHseOn>();
+            while (M::RccCrHseRdy::getValue() == 0);
 
             // vco = in * (n / m)
             // AHBFreq = vco / p
@@ -167,15 +168,24 @@ class RCCInitializerSTM32F4
                           "Difference between chosen parameters and required frequency"
                           " is too big.");
 
-            RCC_PLLCFGR = (m      << RCC_PLLCFGR_PLLM_SHIFT) | // Division factor for PLL input
-                          (n      << RCC_PLLCFGR_PLLN_SHIFT) | // multiplication for VCO
-                          (pValue << RCC_PLLCFGR_PLLP_SHIFT) | // Main system clock division factor
-                          RCC_PLLCFGR_PLLSRC |                 // HSE clock as input
-                          (q      << RCC_PLLCFGR_PLLQ_SHIFT);  // USB, SDIO, Random-number generator
+            RegisterVisitor::clear<
+                typename M::RccPllCfgrM,
+                typename M::RccPllCfgrN,
+                typename M::RccPllCfgrP,
+                typename M::RccPllCfgrQ,
+                typename M::RccPllCfgrSrc
+            >();
+            RegisterVisitor::set<
+                typename M::RccPllCfgrM::template Value<m>,      // Division factor for PLL input
+                typename M::RccPllCfgrN::template Value<n>,      // multiplication for VCO
+                typename M::RccPllCfgrP::template Value<pValue>, // Main system clock division factor
+                typename M::RccPllCfgrQ::template Value<q>,      // USB, SDIO, Random-number generator
+                typename M::RccPllCfgrSrc::Hse          // HSE clock as input
+            >();
 
             // Turning PLL on
-            RCC_CR |= RCC_CR_PLLON;
-            while ((RCC_CR & RCC_CR_PLLRDY) == 0);
+            RegisterVisitor::set<typename M::RccCrPllOn>();
+            while (M::RccCrPllRdy::getValue() == 0);
 
             // TODO: select based on voltage and frequency
             //       try to understand what are all those
@@ -188,8 +198,12 @@ class RCCInitializerSTM32F4
             constexpr int ppre2Value = getPpreValue<ppre2Div>();
             constexpr int ppre1Value = getPpreValue<ppre1Div>();
 
-            RCC_CFGR = (ppre2Value << 13) | (ppre1Value << 10) | (1 << 1);
-            while ((RCC_CFGR & ((1 << 1) | (1 << 0))) != RCC_CFGR_SWS_PLL);
+            RegisterVisitor::set<
+                typename M::RccCfgrPpre2::template Value<ppre2Value>,
+                typename M::RccCfgrPpre1::template Value<ppre1Value>,
+                typename M::RccCfgrSw::Pll
+            >();
+            while (M::RccCfgrSws::getValue() != M::RccCfgrSws::Pll::value);
 
             // Set for libopencm3 to work properly
             rcc_ppre1_frequency = APB1Freq;
@@ -197,7 +211,7 @@ class RCCInitializerSTM32F4
 
             // Turn HSI off - clock is fully configured and we
             // don't need internal clock anymore
-            RCC_CR &= ~RCC_CR_HSION;
+            RegisterVisitor::clear<typename M::RccCrHsiOn>();
         }
 };
 

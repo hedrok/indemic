@@ -78,13 +78,13 @@ class RegisterBit
             return RegisterValue<R>(other._value | (_value << bitIndex));
         }
 
-        static inline typename R::value_t getValueUnshifted()
+        static inline typename R::value_t getValue()
         {
             return R::get() & value;
         }
-        static inline typename R::value_t getValue()
+        static inline typename R::value_t getBitsValue()
         {
-            return getValueUnshifted() >> bitIndex;
+            return getValue() >> bitIndex;
         }
 
     private:
