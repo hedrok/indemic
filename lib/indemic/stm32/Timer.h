@@ -30,7 +30,12 @@ namespace stm32
 /**
  * STM32 Timer
  */
-template<typename M, uint64_t base_address, uint8_t _bits, template<typename> class InterruptTemplate >
+template<typename M,
+         uint64_t base_address,
+         uint8_t _bits,
+         template<typename> class InterruptTemplate,
+         uint64_t inputFrequency
+         >
 class TimerBase
 {
     public:
@@ -51,6 +56,7 @@ class TimerBase
 
         constexpr static uint8_t bits = _bits;
         constexpr static uint64_t counterResolution = 1 << bits;
+        constexpr static double nsPerClock = 1e9 / inputFrequency;
 
         template<typename F>
         using Interrupt = InterruptTemplate<F>;

@@ -32,11 +32,11 @@ namespace IndeMic
 namespace stm32
 {
     /** Generic STM32 microcontroller */
-    template<uint64_t ns = 0>
+    template<typename R>
     class STM32Mic
     {
         public:
-            enum {nsPerClock = ns};
+            typedef R RCCConf;
 
             typedef uint32_t register_value_t;
             typedef volatile uint64_t register_double_t;

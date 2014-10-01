@@ -29,10 +29,10 @@ namespace IndeMic
  * PeriodicRunner
  * STM32 implementation
  */
-template<typename Timer, typename Functor, uint64_t ns>
-class PeriodicRunner<stm32::STM32Mic<ns>, Timer, Functor>
+template<typename Timer, typename Functor, typename Clock>
+class PeriodicRunner<stm32::STM32Mic<Clock>, Timer, Functor>
 {
-    typedef stm32::STM32Mic<ns> M;
+    typedef stm32::STM32Mic<Clock> M;
     public:
         static void initClock() __attribute__((constructor))
                                 __attribute__((used))
@@ -45,9 +45,8 @@ class PeriodicRunner<stm32::STM32Mic<ns>, Timer, Functor>
         template<uint64_t nanoseconds>
         static inline void setPeriod()
         {
-            // TODO: why period is two times larger than expected?
-            static_assert(nanoseconds > 2 * M::nsPerClock, "Run function each clock cycle is too dangerous");
-            constexpr uint64_t clocks = nanoseconds / M::nsPerClock;
+            static_assert(nanoseconds > 2 * Timer::nsPerClock, "Run function each clock cycle is too dangerous");
+            constexpr uint64_t clocks = nanoseconds / Timer::nsPerClock;
             constexpr uint8_t clockDivision = clocks / Timer::counterResolution / Timer::counterResolution;
             static_assert(clockDivision < 4, "Period is too long"); 
             constexpr uint8_t ckd =   (clockDivision < 1) ? 1 

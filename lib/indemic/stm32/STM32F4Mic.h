@@ -28,17 +28,19 @@
 #include <indemic/stm32/STM32Mic.h>
 #include <indemic/stm32/Port.h>
 #include <indemic/stm32/Timer.h>
+#include <indemic/stm32/RCCInitializer.h>
 
 namespace IndeMic
 {
 namespace stm32
 {
-    template<uint64_t ns = 0>
-    class STM32F4Mic : public STM32Mic<ns>
+    template<typename R>
+    class STM32F4Mic : public STM32Mic<R>
     {
         public:
-            typedef STM32Mic<ns> parent;
+            typedef STM32Mic<R> parent;
             typedef STM32F4Mic M;
+            typedef RCCInitializerSTM32F4<STM32F4Mic<R>, 168000000, 84000000, 42000000, 48000000> Clock;
 
             typedef Port<M, GPIOB> PortB;
             typedef Port<M, GPIOC> PortC;
@@ -46,7 +48,7 @@ namespace stm32
 
             class RccApb1Enr : public RegisterBase<M, RCC_BASE + 0x40, RccApb1Enr> {};
 
-            class Timer4 : public TimerBase<M, TIM4, 16, InterruptTimer4>
+            class Timer4 : public TimerBase<M, TIM4, 16, InterruptTimer4, Clock::APB1TimerFreq>
             {
                 public:
                     class RccEn : public RegisterBit<RccApb1Enr, 2> {};

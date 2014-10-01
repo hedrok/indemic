@@ -28,10 +28,10 @@ namespace IndeMic
  * One Input/Output Pin class
  * STM32 implementation
  */
-template<typename Port, uint8_t pin, uint64_t ns>
-class IOPin<stm32::STM32Mic<ns>, Port, pin>
+template<typename Port, uint8_t pin, typename Clock>
+class IOPin<stm32::STM32Mic<Clock>, Port, pin>
 {
-    typedef stm32::STM32Mic<ns> M;
+    typedef stm32::STM32Mic<Clock> M;
     typedef typename M::logic_t logic_t;
     static constexpr typename M::port_mask_t msk = 1 << pin;
     public:

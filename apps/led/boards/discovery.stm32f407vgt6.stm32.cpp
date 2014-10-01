@@ -19,6 +19,7 @@
 
 #include <libopencm3/stm32/rcc.h>
 
+#include <indemic/stm32/RCCConfig.h>
 #include <indemic/stm32/STM32F4Mic.h>
 #include <indemic/stm32/IOPin.h>
 #include <indemic/stm32/PeriodicRunner.h>
@@ -27,8 +28,8 @@
 
 namespace Led
 {
-    /* 168 MHz  10^9 / (168 * 10^6) */
-    typedef IndeMic::stm32::STM32F4Mic<6> M;
+    /* 8 MHz */
+    typedef IndeMic::stm32::STM32F4Mic<IndeMic::stm32::RCCConfig<8000000> > M;
 
     typedef IndeMic::IOPin<M, M::PortD, 12> LedGreen;
     typedef IndeMic::IOPin<M, M::PortD, 13> LedOrange;
@@ -41,7 +42,5 @@ namespace Led
 
 int main()
 {
-    /* Set STM32 to 168 MHz. */
-	rcc_clock_setup_hse_3v3(&hse_8mhz_3v3[CLOCK_3V3_168MHZ]);
     HelloLed<Led::M, Led::LedGreen, Led::MyRunner>::main();
 }
