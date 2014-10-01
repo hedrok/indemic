@@ -29,7 +29,7 @@
 namespace Led
 {
     /* 8 MHz */
-    typedef IndeMic::stm32::STM32F4Mic<IndeMic::stm32::RCCConfig<8000000> > M;
+    typedef IndeMic::stm32::STM32F4Mic<IndeMic::stm32::RCCConfig<8000000, 3300> > M;
 
     typedef IndeMic::IOPin<M, M::PortD, 12> LedGreen;
     typedef IndeMic::IOPin<M, M::PortD, 13> LedOrange;

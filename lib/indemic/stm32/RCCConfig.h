@@ -29,6 +29,7 @@ namespace stm32
  *
  * Use this class to configure clock frequency of STM32 mcu's
  * @param inputFrequency Frequency of input oscilator in Hz
+ * @param inputVoltage in milliVolts
  * @param AHBFrequency required AHBFrequency in Hz, set to zero
  *        for default value (maximum)
  * @param APB2Frequency same for APB2 (maximum possible if zero)
@@ -41,6 +42,7 @@ namespace stm32
  * @param eps Maximum permitted error in frequency setting in milli herz
  */
 template<uint64_t inputFrequency,
+         uint64_t inputVoltage,
          uint64_t AHBFrequency = 0,
          uint64_t APB2Frequency = 0,
          uint64_t APB1Frequency = 0,
@@ -55,6 +57,7 @@ class RCCConfig
         constexpr static double APB1Freq   = APB1Frequency;
         constexpr static double PeriphFreq = PeripheryFrequency;
         constexpr static double eps = epsilon / 1000.;
+        constexpr static double voltage = inputVoltage / 1000.;
 };
 
 }

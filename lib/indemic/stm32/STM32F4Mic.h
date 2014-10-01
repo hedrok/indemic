@@ -89,6 +89,16 @@ namespace stm32
                     using Pll = typename B::template Value<2>;
             };
 
+            class FlashAcr : public RegisterBase<M, FLASH_MEM_INTERFACE_BASE + 0x00, FlashAcr> {};
+            
+            class FlashAcrDCRst   : public RegisterBit<FlashAcr, 12> {};
+            class FlashAcrICRst   : public RegisterBit<FlashAcr, 11> {};
+            class FlashAcrDCEn    : public RegisterBit<FlashAcr, 10> {};
+            class FlashAcrICEn    : public RegisterBit<FlashAcr,  9> {};
+            class FlashAcrPrftEn  : public RegisterBit<FlashAcr,  8> {};
+            class FlashAcrLatency : public RegisterBit<FlashAcr,  0, 3> {};
+
+
             class Timer4 : public TimerBase<M, TIM4, 16, InterruptTimer4, Clock::APB1TimerFreq>
             {
                 public:

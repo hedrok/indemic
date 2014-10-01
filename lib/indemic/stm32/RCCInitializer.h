@@ -187,10 +187,22 @@ class RCCInitializerSTM32F4
             RegisterVisitor::set<typename M::RccCrPllOn>();
             while (M::RccCrPllRdy::getValue() == 0);
 
-            // TODO: select based on voltage and frequency
-            //       try to understand what are all those
-            //       caches 
-            FLASH_ACR = 0x605;
+            // Selecting flash latency based on voltage and hclk
+            constexpr uint64_t hclk = M::RCCConf::inputFreq * x / p;
+            constexpr uint8_t latency =   M::RCCConf::voltage < 2.1 ? hclk / 16000000
+                                        : M::RCCConf::voltage < 2.4 ? hclk / 18000000
+                                        : M::RCCConf::voltage < 2.7 ? hclk / 24000000
+                                        :                             hclk / 30000000
+                                        ;
+            static_assert(latency < 8, "latency too big");
+            RegisterVisitor::set<
+                typename M::FlashAcrDCEn,
+                typename M::FlashAcrICEn,
+                // Not enabling prefetch cache as it is written in libopencm3
+                // commit that it can cause problems with ADC in some STM32F4
+                //typename M::FlashAcrPrftEn,
+                typename M::FlashAcrLatency::template Value<latency>
+            >();
 
             // Selecting prescalers for APB2 and APB1
             constexpr int ppre2Div = AHBFreq / APB2Freq;
