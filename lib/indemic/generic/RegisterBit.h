@@ -77,6 +77,16 @@ class RegisterBit
         {
             return RegisterValue<R>(other._value | (_value << bitIndex));
         }
+
+        static inline typename R::value_t getValueUnshifted()
+        {
+            return R::get() & value;
+        }
+        static inline typename R::value_t getValue()
+        {
+            return getValueUnshifted() >> bitIndex;
+        }
+
     private:
         friend class RegisterValue<R>;
 
