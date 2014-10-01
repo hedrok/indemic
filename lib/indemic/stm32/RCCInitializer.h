@@ -76,6 +76,19 @@ class RCCInitializerSTM32F4
 
         }
 
+        /**
+         * Checks that |a - b| <= milliMaxDiff / 1000.
+         */
+        template<uint64_t a, uint64_t b, uint64_t milliMaxDiff>
+        class DifferenceAsserter
+        {
+            constexpr static double diff = a < b ? b - a : a - b;
+            static_assert(diff <= milliMaxDiff / 1000., "Difference is too big");
+            public:
+                static constexpr uint8_t t = 1;
+        };
+
+
         static void initRCC() __attribute__((constructor))
                               __attribute__((used))
         {
@@ -161,12 +174,6 @@ class RCCInitializerSTM32F4
             constexpr int q = M::RCCConf::inputFreq * n / m / PeriphFreq;
             static_assert(q >= minQ && q <= maxQ, "Could not select q");
 
-            //TODO: check all frequencies, move to separate class
-            constexpr double signedDiff = AHBFreq - M::RCCConf::inputFreq * n / m / p;
-            constexpr double diff = signedDiff < 0. ? -signedDiff : signedDiff;
-            static_assert(diff <= M::RCCConf::eps,
-                          "Difference between chosen parameters and required frequency"
-                          " is too big.");
 
             RegisterVisitor::clear<
                 typename M::RccPllCfgrM,
@@ -216,6 +223,12 @@ class RCCInitializerSTM32F4
                 typename M::RccCfgrSw::Pll
             >();
             while (M::RccCfgrSws::getValue() != M::RccCfgrSws::Pll::value);
+
+            constexpr uint64_t milliEps = static_cast<uint64_t>(M::RCCConf::eps * 1000.);
+            static_assert(DifferenceAsserter<AHBFreq, hclk, milliEps>::t == 1, "assert");
+            static_assert(DifferenceAsserter<APB1Freq, hclk / ppre1Div, milliEps>::t == 1, "assert");
+            static_assert(DifferenceAsserter<APB2Freq, hclk / ppre2Div, milliEps>::t == 1, "assert");
+            static_assert(DifferenceAsserter<PeriphFreq, hclk * p / q, milliEps>::t == 1, "assert");
 
             // Set for libopencm3 to work properly
             rcc_ppre1_frequency = APB1Freq;
