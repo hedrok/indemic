@@ -38,6 +38,7 @@ class PeriodicRunner<stm32::STM32Mic<Clock>, Timer, Functor>
                                 __attribute__((used))
         {
             RegisterVisitor::set<typename Timer::RccEn>();
+            nvic_enable_irq(Timer::irqNumber);
         }
         /**
          * Sets timer period to nanoseconds
@@ -66,13 +67,26 @@ class PeriodicRunner<stm32::STM32Mic<Clock>, Timer, Functor>
         }
         static inline void enable()
         {
-            nvic_enable_irq(Timer::irqNumber);
-            RegisterVisitor::set<typename Timer::Uie, typename Timer::CEn>();
+            // Preventing interrupt before time
+            RegisterVisitor::clear<typename Timer::Uie>();
+            RegisterVisitor::set<typename Timer::CEn>();
+            // Making sure update event comes quick
+            Timer::Cnt::assign(Timer::counterResolution - 1);
+            while (!Timer::Uif::getValue()) {
+                continue;
+            }
+            RegisterVisitor::clear<typename Timer::Uif>();
+            // Now Prescaler is loaded to shadow register, enable interrupt
+            RegisterVisitor::set<typename Timer::Uie>();
         }
         static inline void disable()
         {
             RegisterVisitor::clear<typename Timer::Uie, typename Timer::CEn>();
         }
+        /**
+         * Wrapper for functors - need to clear Uif bit manually each time
+         * interrupt is called
+         */
         class WrapperFunctor
         {
             public:

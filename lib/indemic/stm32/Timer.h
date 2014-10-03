@@ -47,6 +47,7 @@ class TimerBase
         class Arr : public RegisterSettable<M, base_address + 0x2c, Arr> {};
 
         class Ckd : public RegisterBit<Cr1, 8, 3> {};
+        class Urs : public RegisterBit<Cr1, 2> {};
         class CEn : public RegisterBit<Cr1, 0> {};
 
         class Uif : public RegisterBit<Sr, 0> {};
