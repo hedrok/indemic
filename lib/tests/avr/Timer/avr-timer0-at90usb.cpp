@@ -3,20 +3,18 @@
 #include <avr/sleep.h>
 
 #ifndef DONT_USE_INDEMIC
-#include <indemic/avr/products.h>
+#include <indemic/avr/AT90USB162Mic.h>
 #include <indemic/avr/PeriodicRunner.h>
-
-using namespace IndeMic::avr;
 
 // clock: 1000000
 // 1 000 000 Hz
 // 1 / 1 000 000 = 10^-6 = 1 us = 1000 ns
 
 // how many cycles? 125 * 8 = 1000 so that period is 1 ms
-typedef AT90USB162Mic<1000> M;
+typedef IndeMic::avr::AT90USB162Mic<1000> M;
 
 template<typename F>
-class MyRunner : public PeriodicRunner<M, M::Timer0, F> {};
+class MyRunner : public IndeMic::PeriodicRunner<M, M::Timer0, F> {};
 
 class Functor
 {

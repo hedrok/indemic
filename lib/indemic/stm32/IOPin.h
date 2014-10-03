@@ -18,22 +18,22 @@
  */
 #pragma once
 
+#include <libopencm3/stm32/gpio.h>
 #include <indemic/IOPin.h>
-#include <indemic/avr/AVRMic.h>
-#include <indemic/generic/RegisterBit.h>
 
 namespace IndeMic
 {
 
 /**
  * One Input/Output Pin class
- * AVR implementation
+ * STM32 implementation
  */
-template<typename Port, uint8_t pin, uint64_t ns>
-class IOPin<avr::AVRMic<ns>, Port, pin>
+template<typename Port, uint8_t pin, typename Clock>
+class IOPin<stm32::STM32Mic<Clock>, Port, pin>
 {
-    typedef avr::AVRMic<ns> M;
+    typedef stm32::STM32Mic<Clock> M;
     typedef typename M::logic_t logic_t;
+    static constexpr typename M::port_mask_t msk = 1 << pin;
     public:
         /**
          * Read value from pin
@@ -48,7 +48,6 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void makeInput()
         {
-            Port::DDR::clear(_ddrBit);
         }
 
         /**
@@ -56,7 +55,8 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void makeOutput()
         {
-            Port::DDR::set(_ddrBit);
+            gpio_mode_setup(Port::base, GPIO_MODE_OUTPUT,
+                    GPIO_PUPD_NONE, msk);
         }
 
         /**
@@ -67,7 +67,7 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void setHigh()
         {
-            Port::PORT::set(_portBit);
+		    gpio_set(Port::base, msk);
         }
 
         /**
@@ -77,7 +77,7 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void setLow()
         {
-            Port::PORT::clear(_portBit);
+		    gpio_clear(Port::base, msk);
         }
 
         /**
@@ -93,10 +93,6 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
                 setLow();
             }
         }
-    private:
-        constexpr static RegisterBit<typename Port::PORT, pin> _portBit = RegisterBit<typename Port::PORT, pin>();
-        constexpr static RegisterBit<typename Port::PIN, pin> _pinBit = RegisterBit<typename Port::PIN, pin>();
-        constexpr static RegisterBit<typename Port::DDR, pin> _ddrBit = RegisterBit<typename Port::DDR, pin>();
 };
 
 }

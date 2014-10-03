@@ -2,7 +2,7 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
-#include <indemic/avr/products.h>
+#include <indemic/avr/AT90USB162Mic.h>
 #include <indemic/avr/ExternalInterrupt.h>
 
 /*

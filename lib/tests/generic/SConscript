@@ -5,6 +5,7 @@ tests_src = [
     'register/RegisterMultiSetterTest.t.h',
     'register/RegisterVisitorTest.t.h',
     'register/RegisterDoubleTest.t.h',
+    'register/RegisterBitValueTest.t.h',
 ]
 cxxtest_env.CxxTest('test_generic', tests_src)
 

@@ -33,6 +33,7 @@ template<typename M, uint32_t address, typename Derived, typename register_value
 class RegisterBase
 {
     public:
+        typedef register_value_t value_t;
         static inline void set(const RegisterValue<Derived> v)
         {
             Derived::reg() |= v._value;
@@ -45,11 +46,14 @@ class RegisterBase
         {
             Derived::reg() = v._value;
         }
+        static inline value_t get()
+        {
+            return Derived::reg();
+        }
         static inline register_t& reg()
         {
             return static_cast<register_t&>(*reinterpret_cast<register_t*>(address));
         }
-        typedef register_value_t value_t;
 };
 
 template<typename M, uint32_t address, typename Derived, typename register_value_t = typename M::register_value_t, typename register_t = typename M::register_t>

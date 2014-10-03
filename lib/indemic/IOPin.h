@@ -18,29 +18,26 @@
  */
 #pragma once
 
-#include <indemic/IOPin.h>
-#include <indemic/avr/AVRMic.h>
-#include <indemic/generic/RegisterBit.h>
+#include <stdint.h>
 
 namespace IndeMic
 {
 
 /**
- * One Input/Output Pin class
- * AVR implementation
+ * One Input/Output Pin class interface
  */
-template<typename Port, uint8_t pin, uint64_t ns>
-class IOPin<avr::AVRMic<ns>, Port, pin>
+template<typename Microcontroller, typename Port, uint8_t pin>
+class IOPin
 {
-    typedef avr::AVRMic<ns> M;
-    typedef typename M::logic_t logic_t;
+    typedef IOPin<typename Microcontroller::parent, Port, pin> P;
+    typedef typename Microcontroller::logic_t logic_t;
     public:
         /**
          * Read value from pin
          */
         static inline logic_t get()
         {
-            return 0;
+            return P::get();
         }
 
         /**
@@ -48,7 +45,7 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void makeInput()
         {
-            Port::DDR::clear(_ddrBit);
+            return P::makeInput();
         }
 
         /**
@@ -56,7 +53,7 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void makeOutput()
         {
-            Port::DDR::set(_ddrBit);
+            P::makeOutput();
         }
 
         /**
@@ -67,7 +64,7 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void setHigh()
         {
-            Port::PORT::set(_portBit);
+            P::setHigh();
         }
 
         /**
@@ -77,7 +74,7 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void setLow()
         {
-            Port::PORT::clear(_portBit);
+            P::setLow();
         }
 
         /**
@@ -87,16 +84,8 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void setValue(logic_t value)
         {
-            if (value) {
-                setHigh();
-            } else {
-                setLow();
-            }
+            P::setValue(value);
         }
-    private:
-        constexpr static RegisterBit<typename Port::PORT, pin> _portBit = RegisterBit<typename Port::PORT, pin>();
-        constexpr static RegisterBit<typename Port::PIN, pin> _pinBit = RegisterBit<typename Port::PIN, pin>();
-        constexpr static RegisterBit<typename Port::DDR, pin> _ddrBit = RegisterBit<typename Port::DDR, pin>();
 };
 
 }

@@ -2,15 +2,13 @@
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
 
-#include <indemic/avr/products.h>
+#include <indemic/avr/AT90USB162Mic.h>
 #include <indemic/avr/IOPin.h>
 
-using namespace IndeMic::avr;
+typedef IndeMic::avr::AT90USB162Mic<1> M;
 
-typedef AT90USB162Mic<1> M;
-
-class TestPin0 : public IOPin<M, M::PortC, 0> {};
-class TestPin1 : public IOPin<M, M::PortC, 1> {};
+class TestPin0 : public IndeMic::IOPin<M, M::PortC, 0> {};
+class TestPin1 : public IndeMic::IOPin<M, M::PortC, 1> {};
 
 int main()
 {

@@ -26,6 +26,6 @@
    +024 Make flashing comfortable
    +018 Check if AVR toolchain is available, avr libc is available
         cxxtest and SimAvr
--020 STM32 implementation
-    -021 IOPin for STM32F4
-    -022 PeriodicRunner for STM32F4
++020 STM32 implementation
+    +021 IOPin for STM32F4
+    +022 PeriodicRunner for STM32F4

@@ -18,7 +18,6 @@
  */
 #pragma once
 
-#include <indemic/avr/micro_types.h>
 #include <indemic/generic/RegisterBit.h>
 #include <indemic/generic/RegisterVisitor.h>
 
