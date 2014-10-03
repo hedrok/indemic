@@ -567,6 +567,8 @@ class AVRFamily(BaseFamily):
     def getEnv(self):
         return self._env
     def getBuilders(self):
+        if self.getEnv() is False:
+            return []
         return self.simavr.getBuilders()
 
     def _postCreateProgNode(self, menv, prog, micro, target, sources):
