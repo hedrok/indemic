@@ -10,14 +10,6 @@
     +006 Prepare test on external interrupt trigger
     +007 AVR Interrupt class, vector table, LD script
     +008 Implement External Interrrupt for AVR, make test pass
-*009 Timer class
-    +010 Simple periodic call of interrupt (fixed period in cycles)
-    +011 Set period in time, pass crystall frequency somehow,
-         calculate timer parameters at compile time
-    -012 Calculate parameters at runtime
-    -013 PWM options for one pin
-    +014 Timer1 (16-bit) for AT90USB
-    -025 Make use of user-defined literals for nanoseconds etc
 +014 Build system
    +015 Move all building process to Scons
    +016 Tests of failed compilation
@@ -29,3 +21,18 @@
 +020 STM32 implementation
     +021 IOPin for STM32F4
     +022 PeriodicRunner for STM32F4
+*009 Timer class
+    +010 Simple periodic call of interrupt (fixed period in cycles)
+    +011 Set period in time, pass crystall frequency somehow,
+         calculate timer parameters at compile time
+    +014 Timer1 (16-bit) for AT90USB
+    -013 PWM options for one pin
+    -012 Calculate parameters at runtime
+    -025 Make use of user-defined literals for nanoseconds etc
+- USART class
+- Copy elf patching scheme from STM32 to AVR so that original interrupts of
+  avr-libc work.
+- Check for collisions of indemic interrupts with original interrupts (libopencm3
+  for STM32 family and avr-libc for AVR family)
+- Rename all register and bit classes consistently
+- Add doxygen to build system, add comments to all classes/methods etc
