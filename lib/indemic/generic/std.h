@@ -40,5 +40,42 @@ namespace std
         public:
             enum {value = 1};
     };
+
+    /**
+     * Tuple. To get type of ith 
+     * std::tuple_element<channel, std::tuple<T...> >::type
+     */
+    namespace
+    {
+        template<uint64_t i, typename T1, typename... T>
+        class HelperGetElement
+        {
+            static_assert(i <= sizeof...(T), "Index is too big");
+            public:
+                typedef typename HelperGetElement<i - 1, T...>::type type;
+        };
+        template<typename T1, typename... T>
+        class HelperGetElement<0, T1, T...>
+        {
+            public:
+                typedef T1 type;
+        };
+    }
+    template<uint64_t i, typename T>
+    class tuple_element
+    {
+        public:
+            typedef typename T::template GetElementType<i> type;
+    };
+    template<typename... T>
+    class tuple
+    {
+        private:
+            template<uint64_t i, typename>
+            friend class tuple_element;
+
+            template<uint64_t i>
+            using GetElementType = typename HelperGetElement<i, T...>::type;
+    };
 }
 }

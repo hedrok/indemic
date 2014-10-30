@@ -22,6 +22,7 @@
 #pragma once
 
 #include <indemic/avr/Port.h>
+#include <indemic/avr/IOPin.h>
 #include <indemic/avr/AVRMic.h>
 #include <indemic/generic/RegisterBit.h>
 #include <indemic/generic/RegisterVisitor.h>
@@ -30,6 +31,16 @@ namespace IndeMic
 {
 namespace avr
 {
+
+    namespace
+    {
+        template<typename M, typename Pin>
+        class AT90USBOutputCompareUnitHelper
+        {
+            public:
+                typedef void type;
+        };
+    }
     template<uint64_t ns = 0>
     class AT90USB162Mic : public AVRMic<ns>
     {
@@ -40,6 +51,8 @@ namespace avr
             typedef Port<AT90USB162Mic, 0x23> PortB;
             typedef Port<AT90USB162Mic, 0x26> PortC;
             typedef Port<AT90USB162Mic, 0x29> PortD;
+
+            typedef IOPin<AT90USB162Mic, PortD, 0> PD0Pin;
 
             // External Interrupt Registers
             class EicrA : public RegisterBase<M, 0x69, EicrA> {};
@@ -119,7 +132,8 @@ namespace avr
             class Timer0
             {
                 public:
-                constexpr static uint64_t counterBits = 8;
+                typedef uint8_t counter_t;
+                constexpr static uint64_t counterBits = sizeof(counter_t) * 8;
                 constexpr static uint64_t counterResolution = 1 << counterBits;
                 typedef Tccr0A TccrA;
                 class Wgm0  : public RegisterBit<TccrA, 0> {};
@@ -262,10 +276,19 @@ namespace avr
                         using Interrupt = CompBInterrupt<T>;
                 };
 
+                template<typename Pin>
+                class OutputCompareUnit : public AT90USBOutputCompareUnitHelper<M, Pin>::type
+                {
+                };
+
                 static inline void setCTCMode()
                 {
                     RegisterVisitor::clear<Wgm2, Wgm0>();
                     RegisterVisitor::set<Wgm1>();
+                }
+                static inline void setFastPWMTopOcrAMode()
+                {
+                    RegisterVisitor::set<Wgm2, Wgm1, Wgm0>();
                 }
             };
 
@@ -284,7 +307,8 @@ namespace avr
             class Timer1
             {
                 public:
-                constexpr static uint64_t counterBits = 16;
+                typedef uint16_t counter_t;
+                constexpr static uint64_t counterBits = sizeof(counter_t) * 8;
                 constexpr static uint64_t counterResolution = 1L << counterBits;
                 typedef Tccr1A TccrA;
                 class Wgm0  : public RegisterBit<TccrA, 0> {};
@@ -482,8 +506,23 @@ namespace avr
                     RegisterVisitor::clear<Wgm3, Wgm1, Wgm0>();
                     RegisterVisitor::set<Wgm2>();
                 }
+                static inline void setFastPWMTopOcrAMode()
+                {
+                    RegisterVisitor::set<Wgm3, Wgm2, Wgm1, Wgm0>();
+                }
             };
     };
+
+    namespace
+    {
+        template<typename M>
+        class AT90USBOutputCompareUnitHelper<M, typename M::PD0Pin>
+        {
+            public:
+                typedef typename M::Timer0::OutputCompareUnitB type;
+        };
+    }
+    
     template<uint64_t ns>
     template<typename Functor>
         __attribute__ ((used))
