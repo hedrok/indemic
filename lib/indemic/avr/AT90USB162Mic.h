@@ -54,6 +54,8 @@ namespace avr
 
             typedef IOPin<AT90USB162Mic, PortD, 0> PD0Pin;
 
+            typedef IOPin<AT90USB162Mic, PortC, 5> PC5Pin;
+
             // External Interrupt Registers
             class EicrA : public RegisterBase<M, 0x69, EicrA> {};
             class EicrB : public RegisterBase<M, 0x6a, EicrB> {};
@@ -501,6 +503,11 @@ namespace avr
                         using Interrupt = CompCInterrupt<T>;
                 };
 
+                template<typename Pin>
+                class OutputCompareUnit : public AT90USBOutputCompareUnitHelper<M, Pin>::type
+                {
+                };
+
                 static inline void setCTCMode()
                 {
                     RegisterVisitor::clear<Wgm3, Wgm1, Wgm0>();
@@ -520,6 +527,12 @@ namespace avr
         {
             public:
                 typedef typename M::Timer0::OutputCompareUnitB type;
+        };
+        template<typename M>
+        class AT90USBOutputCompareUnitHelper<M, typename M::PC5Pin>
+        {
+            public:
+                typedef typename M::Timer1::OutputCompareUnitB type;
         };
     }
     

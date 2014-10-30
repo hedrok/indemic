@@ -20,6 +20,7 @@
 
 #include <indemic/generic/std.h>
 #include <indemic/avr/TimerPeriodSetter.h>
+#include <indemic/PWMTimer.h>
 
 namespace IndeMic
 {
