@@ -20,6 +20,7 @@
 
 #include <indemic/PeriodicRunner.h>
 #include <indemic/avr/AVRMic.h>
+#include <indemic/avr/TimerPeriodSetter.h>
 #include <indemic/generic/std.h>
 #include <indemic/generic/RegisterBit.h>
 #include <indemic/generic/RegisterVisitor.h>
@@ -35,23 +36,6 @@ class PeriodicRunner<avr::AVRMic<ns>, Timer, Functor>
 {
     typedef avr::AVRMic<ns> M;
     static_assert((Timer::template CompAInterrupt<Functor>::t == 1), "Something very wrong. This line should just instantiate Interrupt template");
-    private:
-        static constexpr uint64_t ocrValue(const uint64_t clocks, const uint64_t prescaler)
-        {
-            return clocks / prescaler - 1;
-        }
-        template<uint64_t clocks, typename CsValue, int tst = 0>
-        class PeriodSetterHelper
-        {
-            public:
-                static void f()
-                {
-                    static_assert(std::is_same<CsValue, void>::value == 0, "Period is too long");
-                    constexpr const uint64_t val = ocrValue(clocks, CsValue::prescaler);
-                    constexpr const bool t = 0 < val && val < Timer::counterResolution;
-                    PeriodSetterHelper<clocks, CsValue, (t ? 1 : 2)>::f();
-                }
-        };
     public:
 
         /**
@@ -61,8 +45,7 @@ class PeriodicRunner<avr::AVRMic<ns>, Timer, Functor>
         static inline void setPeriod()
         {
             static_assert(nanoseconds > 2 * M::nsPerClock, "Run function each clock cycle is too dangerous");
-            constexpr uint64_t clocks = nanoseconds / M::nsPerClock;
-            PeriodSetterHelper<clocks, typename Timer::CsValueFirst>::f();
+            avr::TimerPeriodSetter<M, Timer, nanoseconds>::setPeriod();
             Timer::setCTCMode();
         }
 
@@ -77,30 +60,6 @@ class PeriodicRunner<avr::AVRMic<ns>, Timer, Functor>
         static inline void disable()
         {
             RegisterVisitor::clear<typename Timer::OcieA>();
-        }
-};
-
-template<typename Timer, typename Functor, uint64_t ns>
-template<uint64_t clocks, typename CsValue>
-class PeriodicRunner<avr::AVRMic<ns>, Timer, Functor>::PeriodSetterHelper<clocks, CsValue, 1>
-{
-    public:
-        static void f()
-        {
-            RegisterVisitor::set<typename Timer::Cs::template Value<CsValue::key> >();
-            constexpr const uint64_t val = clocks / CsValue::prescaler - 1;
-            Timer::OcrA::assign(val);
-        }
-};
-
-template<typename Timer, typename Functor, uint64_t ns>
-template<uint64_t clocks, typename CsValue>
-class PeriodicRunner<avr::AVRMic<ns>, Timer, Functor>::PeriodSetterHelper<clocks, CsValue, 2>
-{
-    public:
-        static void f()
-        {
-            PeriodSetterHelper<clocks, typename CsValue::NextValue>::f();
         }
 };
 

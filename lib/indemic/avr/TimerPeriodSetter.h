@@ -41,8 +41,8 @@ class TimerPeriodSetter
         template<typename CsValue, int tst = 0>
         class PeriodSetterHelper;
     public:
-        static_assert(nanoseconds >= M::nsPerClock, "Period is too small");
         static constexpr uint64_t clocks = nanoseconds / M::nsPerClock;
+        static_assert(clocks > 1, "Period should be at least two clock cycles of CPU");
         typedef PeriodSetterHelper<typename Timer::CsValueFirst> Helper;
         static constexpr const uint64_t ocraValue = Helper::ocraValue;
         
