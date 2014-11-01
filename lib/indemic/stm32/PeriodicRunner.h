@@ -18,9 +18,11 @@
  */
 #pragma once
 
+#include <libopencm3/cm3/nvic.h>
+
 #include <indemic/PeriodicRunner.h>
 #include <indemic/generic/RegisterVisitor.h>
-#include <libopencm3/cm3/nvic.h>
+#include <indemic/stm32/TimerPeriodSetter.h>
 
 namespace IndeMic
 {
@@ -32,7 +34,6 @@ namespace IndeMic
 template<typename Timer, typename Functor, typename Clock>
 class PeriodicRunner<stm32::STM32Mic<Clock>, Timer, Functor>
 {
-    typedef stm32::STM32Mic<Clock> M;
     public:
         static void initClock() __attribute__((constructor))
                                 __attribute__((used))
@@ -46,20 +47,7 @@ class PeriodicRunner<stm32::STM32Mic<Clock>, Timer, Functor>
         template<uint64_t nanoseconds>
         static inline void setPeriod()
         {
-            static_assert(nanoseconds > 2 * Timer::nsPerClock, "Run function each clock cycle is too dangerous");
-            constexpr uint64_t clocks = nanoseconds / Timer::nsPerClock;
-            constexpr uint8_t clockDivision = clocks / Timer::counterResolution / Timer::counterResolution;
-            static_assert(clockDivision < 4, "Period is too long"); 
-            constexpr uint8_t ckd =   (clockDivision < 1) ? 1 
-                                    : (clockDivision < 2) ? 2
-                                                          : 4;
-            constexpr uint8_t ckdValue = ckd - 1;
-            constexpr uint64_t pscValue = clocks / ckd / Timer::counterResolution;
-            constexpr uint64_t arrValue = clocks / ckd / (pscValue + 1);
-            RegisterVisitor::clear<typename Timer::Ckd>();
-            RegisterVisitor::set<typename Timer::Ckd::template Value<ckdValue> >();
-            Timer::Psc::assign(pscValue);
-            Timer::Arr::assign(arrValue);
+            stm32::TimerPeriodSetter<Timer, nanoseconds>::setPeriod();
         }
         static inline void clearCounter()
         {

@@ -26,12 +26,14 @@ namespace IndeMic
 /**
  * One Input/Output Pin class interface
  */
-template<typename Microcontroller, typename Port, uint8_t pin>
+template<typename Microcontroller, typename _Port, uint8_t _pin>
 class IOPin
 {
-    typedef IOPin<typename Microcontroller::parent, Port, pin> P;
+    typedef IOPin<typename Microcontroller::parent, _Port, _pin> P;
     typedef typename Microcontroller::logic_t logic_t;
     public:
+        using Port = _Port;
+        static constexpr const uint8_t pin = _pin;
         /**
          * Read value from pin
          */

@@ -55,6 +55,19 @@ public:
 	    //rcc_periph_clock_enable(RCC_GPIOn);
         RCC_AHB1ENR |= (1 << ((base_address - GPIOA) / (GPIOB - GPIOA)));
     }
+
+    //TODO: rewrite to use RegisterVisitor instead of gpio_ functions
+    //      think about some better place for these function
+    template<typename Pin>
+    static inline void setAlternateFunction(uint8_t af)
+    {
+        gpio_set_af(base, af, (1 << Pin::pin));
+    }
+    template<typename Pin>
+    static inline void setMode(uint8_t af)
+    {
+        gpio_mode_setup(base, af, GPIO_PUPD_NONE, (1 << Pin::pin));
+    }
 };
 
 }
