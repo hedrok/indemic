@@ -406,7 +406,7 @@ class ElfPatcherBuilder:
                  name and offset.
         """
         if micro in self._interruptsByMicro:
-            return self._interruptsByMicro
+            return self._interruptsByMicro[micro]
 
         if self._filepathByMicro is None:
             self._initFilepathByMicro()
