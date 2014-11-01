@@ -9,6 +9,7 @@ else:
     tests_src = [
         'ExternalInterrupt/ExternalInterruptTest.t.h',
         'Timer/PeriodicRunnerTest.t.h',
+        'Timer/PWMTest.t.h',
         'IOPin/IOPinTest.t.h',
     ]
     avrtest_node = avr_cxxtest_env.CxxTest('test_avr', tests_src)

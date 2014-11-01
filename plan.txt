@@ -26,13 +26,14 @@
     +011 Set period in time, pass crystall frequency somehow,
          calculate timer parameters at compile time
     +014 Timer1 (16-bit) for AT90USB
-    -013 PWM options for one pin
+    +013 PWM options for one pin
     -012 Calculate parameters at runtime
     -025 Make use of user-defined literals for nanoseconds etc
+- Enable RCC for timer only once even if both PeriodicRunner and PWMTimer are used
 - USART class
 - Copy elf patching scheme from STM32 to AVR so that original interrupts of
   avr-libc work.
 - Check for collisions of indemic interrupts with original interrupts (libopencm3
   for STM32 family and avr-libc for AVR family)
-- Rename all register and bit classes consistently
+- Rename all register and bit classes consistently, use only 'using' instead of typedef
 - Add doxygen to build system, add comments to all classes/methods etc

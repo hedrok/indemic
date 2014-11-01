@@ -1,5 +1,5 @@
 /**
- * @file discovery.stm32f4.stm32.cpp
+ * @file cnc.at90usb162.avr.cpp
  * @package IndeMic
  * @author Kirill Yatsenko <kirill.yatsenko@hedrok.org>
  *
@@ -17,30 +17,23 @@
  * http://www.gnu.org/copyleft/gpl.html
  */
 
-#include <libopencm3/stm32/rcc.h>
+#include <indemic/avr/AT90USB162Mic.h>
+#include <indemic/avr/PWMChannel.h>
+#include <indemic/avr/PWMTimer.h>
+#include <indemic/PWMChannelProvider.h>
+#include <indemic/PWMTimerProvider.h>
 
-#include <indemic/stm32/RCCConfig.h>
-#include <indemic/stm32/STM32F4Mic.h>
-#include <indemic/stm32/IOPin.h>
-#include <indemic/stm32/PeriodicRunner.h>
+#include "../PWMSample.h"
 
-#include "../HelloLed.h"
-
-namespace Led
+namespace Cnc
 {
-    /* 8 MHz, 3.3V */
-    typedef IndeMic::stm32::STM32F4Mic<IndeMic::stm32::RCCConfig<8000000, 3300> > M;
+    typedef IndeMic::avr::AT90USB162Mic<500> M;
 
-    typedef M::PD12Pin LedGreen;
-    typedef M::PD13Pin LedOrange;
-    typedef M::PD14Pin LedRed;
-    typedef M::PD15Pin LedBlue;
-
-    template<typename F>
-    class MyRunner : public IndeMic::PeriodicRunner<M, M::Timer4, F> {};
+    using PWMChannelProvider1 = IndeMic::PWMChannelProvider<M, M::Timer1, M::PC5Pin>;
+    using PWMProvider = IndeMic::PWMTimerProvider<M, M::Timer1, PWMChannelProvider1>;
 };
 
 int main()
 {
-    HelloLed<Led::M, Led::LedGreen, Led::MyRunner>::main();
+    PWMSample<Cnc::M, Cnc::PWMProvider>::main();
 }

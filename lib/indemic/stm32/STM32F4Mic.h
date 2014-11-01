@@ -27,6 +27,7 @@
 
 #include <indemic/stm32/STM32Mic.h>
 #include <indemic/stm32/Port.h>
+#include <indemic/stm32/IOPin.h>
 #include <indemic/stm32/Timer.h>
 #include <indemic/stm32/RCCInitializer.h>
 
@@ -45,6 +46,11 @@ namespace stm32
             typedef Port<M, GPIOB> PortB;
             typedef Port<M, GPIOC> PortC;
             typedef Port<M, GPIOD> PortD;
+
+            typedef IOPin<M, PortD, 12> PD12Pin;
+            typedef IOPin<M, PortD, 13> PD13Pin;
+            typedef IOPin<M, PortD, 14> PD14Pin;
+            typedef IOPin<M, PortD, 15> PD15Pin;
 
             class RccCr      : public RegisterBase<M, RCC_BASE + 0x00, RccCr> {};
             class RccPllCfgr : public RegisterBase<M, RCC_BASE + 0x04, RccPllCfgr> {};
@@ -99,12 +105,36 @@ namespace stm32
             class FlashAcrLatency : public RegisterBit<FlashAcr,  0, 3> {};
 
 
-            class Timer4 : public TimerBase<M, TIM4, 16, InterruptTimer4, Clock::APB1TimerFreq>
+            class Timer4 : public TimerBase<M, TIM4, 16, InterruptTimer4, Clock::APB1TimerFreq, GPIO_AF2>
             {
                 public:
                     class RccEn : public RegisterBit<RccApb1Enr, 2> {};
                     enum { irqNumber = NVIC_TIM4_IRQ };
             };
+    };
+    template<typename R>
+    class OutputCompareUnitSelector<STM32F4Mic<R>, typename STM32F4Mic<R>::PD12Pin>
+    {
+        public:
+            using type = OutputCompareChannel<typename STM32F4Mic<R>::Timer4, 1>;
+    };
+    template<typename R>
+    class OutputCompareUnitSelector<STM32F4Mic<R>, typename STM32F4Mic<R>::PD13Pin>
+    {
+        public:
+            using type = OutputCompareChannel<typename STM32F4Mic<R>::Timer4, 2>;
+    };
+    template<typename R>
+    class OutputCompareUnitSelector<STM32F4Mic<R>, typename STM32F4Mic<R>::PD14Pin>
+    {
+        public:
+            using type = OutputCompareChannel<typename STM32F4Mic<R>::Timer4, 3>;
+    };
+    template<typename R>
+    class OutputCompareUnitSelector<STM32F4Mic<R>, typename STM32F4Mic<R>::PD15Pin>
+    {
+        public:
+            using type = OutputCompareChannel<typename STM32F4Mic<R>::Timer4, 4>;
     };
 }
 }

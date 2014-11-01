@@ -1,5 +1,6 @@
-SConscript(
-    ['led/SConscript'],
-    variant_dir='led/_build',
-    duplicate=0,
-)
+for d in ('led', 'pwm'):
+    SConscript(
+        [d + '/SConscript'],
+        variant_dir = d + '/_build',
+        duplicate = 0,
+    )
