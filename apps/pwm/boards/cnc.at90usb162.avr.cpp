@@ -1,7 +1,7 @@
 /**
  * @file cnc.at90usb162.avr.cpp
  * @package IndeMic
- * @author Kirill Yatsenko <kirill.yatsenko@hedrok.org>
+ * @author Kyrylo Yatsenko <kyrylo.yatsenko@hedrok.org>
  *
  * @section LICENSE
  *
