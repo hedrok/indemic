@@ -1,0 +1,7 @@
+Import('indemic_env', 'avrtest_node')
+
+avr_uart_elf = indemic_env.indemicBoardSimAvr(
+    'uart.at90usb162.avr.elf',
+    ['avr-uart-at90usb.cpp', 'avr-mcu.c'],
+)
+Depends(avrtest_node, avr_uart_elf)

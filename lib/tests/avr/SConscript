@@ -11,13 +11,15 @@ else:
         'Timer/PeriodicRunnerTest.t.h',
         'Timer/PWMTest.t.h',
         'IOPin/IOPinTest.t.h',
+        'Uart/UartTest.t.h',
     ]
     avrtest_node = avr_cxxtest_env.CxxTest('test_avr', tests_src)
 
     Export('avrtest_node', 'avr_cxxtest_env')
 
-    SConscript([ \
-        'ExternalInterrupt/SConscript', \
-        'IOPin/SConscript', \
-        'Timer/SConscript', \
+    SConscript([
+        'ExternalInterrupt/SConscript',
+        'IOPin/SConscript',
+        'Timer/SConscript',
+        'Uart/SConscript',
     ])
