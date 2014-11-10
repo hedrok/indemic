@@ -1,16 +1,24 @@
 #include <avr/io.h>
 #include <indemic/avr/AT90USB162Mic.h>
 
-#define DONT_USE_INDEMIC
-
 #ifndef DONT_USE_INDEMIC
-    // TODO
+#include <indemic/UartConfig.h>
+#include <indemic/avr/UartContr.h>
+
+using M = IndeMic::avr::AT90USB162Mic<1000>;
+using MyUartConfig = IndeMic::UartConfig<38400, 8, IndeMic::UartParity::off, 1>;
+using MyUart = IndeMic::UartContr<M, MyUartConfig, M::Uart1>;
 #endif
 
 int main()
 {	
 #ifndef DONT_USE_INDEMIC
-    // TODO
+    MyUart::enable();
+    uint8_t b;
+    while (true) {
+        b = MyUart::readBlocking();
+        MyUart::writeBlocking(b + 1);
+    }
 #else
     // Use quickest baudrate possible
     UBRR1 = 0;

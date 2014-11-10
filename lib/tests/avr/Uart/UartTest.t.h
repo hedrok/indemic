@@ -56,7 +56,7 @@ class UartTestSuite : public CxxTest::TestSuite
             );
 
             // For reaction to input symbol
-            for (avr_cycle_count_t i = 0; i < 200; i++) {
+            for (avr_cycle_count_t i = 0; i < 2000; i++) {
                 avr_run(avr);
             }
             // Check that Uart character was sent

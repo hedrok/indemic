@@ -523,6 +523,118 @@ namespace avr
                     >;
                 };
             };
+
+            // UART1 Registers
+            class Udr1   : public RegisterSettable<M, 0xce, Udr1> {};
+            class Ucsr1A : public RegisterBase<M, 0xc8, Ucsr1A> {};
+            class Ucsr1B : public RegisterBase<M, 0xc9, Ucsr1B> {};
+            class Ucsr1C : public RegisterBase<M, 0xca, Ucsr1C> {};
+            class Ucsr1D : public RegisterBase<M, 0xcb, Ucsr1D> {};
+            class Ubrr1  : public RegisterDoubleSettable<M, 0xcc, Ubrr1> {};
+
+            class Uart1
+            {
+                public:
+                using Udr = Udr1;
+                using UcsrA = Ucsr1A;
+                using UcsrB = Ucsr1B;
+                using UcsrC = Ucsr1C;
+                using UcsrD = Ucsr1D;
+                using Ubrr = Ubrr1;
+
+                // UcsrA
+                class Mpcm : public RegisterBit<UcsrA, 0> {};
+                class U2x  : public RegisterBit<UcsrA, 1> {};
+                class Upe  : public RegisterBit<UcsrA, 2> {};
+                class Dor  : public RegisterBit<UcsrA, 3> {};
+                class Fe   : public RegisterBit<UcsrA, 4> {};
+                class Udre : public RegisterBit<UcsrA, 5> {};
+                class Txc  : public RegisterBit<UcsrA, 6> {};
+                class Rxc  : public RegisterBit<UcsrA, 7> {};
+
+                // UcsrB
+                class Txb8   : public RegisterBit<UcsrB, 0> {};
+                class Rxb8   : public RegisterBit<UcsrB, 1> {};
+                class Ucsz2  : public RegisterBit<UcsrB, 2> {};
+                class TxEn   : public RegisterBit<UcsrB, 3> {};
+                class RxEn   : public RegisterBit<UcsrB, 4> {};
+                class UdreIe : public RegisterBit<UcsrB, 5> {};
+                class TxcIe  : public RegisterBit<UcsrB, 6> {};
+                class RxcIe  : public RegisterBit<UcsrB, 7> {};
+
+                // UcsrC
+                class Ucpol : public RegisterBit<UcsrC, 0> {};
+                class Ucsz : public RegisterBit<UcsrC, 1, 2> 
+                {
+                    public:
+                        using B = Ucsz;
+                        using FiveBit = typename B::template Value<0>;
+                        using SixBit = typename B::template Value<1>;
+                        using SevenBit = typename B::template Value<2>;
+                        using EightBit = typename B::template Value<3>;
+                        // To enable nine-bit, set Ucsz2 too
+                        using NineBitWithoutUcsz2 = typename B::template Value<3>;
+                };
+                class Usbs : public RegisterBit<UcsrC, 3> 
+                {
+                    public:
+                        using B = Usbs;
+                        using OneStopBit = typename B::template Value<0>;
+                        using TwoStopBits = typename B::template Value<1>;
+                };
+                class Upm : public RegisterBit<UcsrC, 4, 2>
+                {
+                    public:
+                        using B = Upm;
+                        using Disabled = typename B::template Value<0>;
+                        // 1 reserved
+                        using EnabledEven = typename B::template Value<2>;
+                        using EnabledOdd = typename B::template Value<3>;
+                };
+                class UmSel : public RegisterBit<UcsrC, 6, 2>
+                {
+                    public:
+                        using B = UmSel;
+                        using AsynchronousUart = typename B::template Value<0>;
+                        using SynchronousUart = typename B::template Value<1>;
+                        // 2 reserved
+                        using MasterSPI = typename B::template Value<3>;
+                };
+
+                // ReceiveComplete Interrupt
+                template<typename Functor>
+                class ReceiveCompleteInterrupt
+                {
+                    public:
+                        enum {t = 1};
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".usart1_rx_vector")))
+                               const uint16_t interrupt;
+                };
+                // DataRegisterEmpty Interrupt
+                template<typename Functor>
+                class DataRegisterEmptyInterrupt
+                {
+                    public:
+                        enum {t = 1};
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".usart1_udre_vector")))
+                               const uint16_t interrupt;
+                };
+                // TransmitComplete Interrupt
+                template<typename Functor>
+                class TransmitCompleteInterrupt
+                {
+                    public:
+                        enum {t = 1};
+                        static __attribute__ ((used)) 
+                               __attribute__ ((section (".usart1_tx_vector")))
+                               const uint16_t interrupt;
+                };
+            };
+
+
+
     };
 
     namespace
@@ -606,6 +718,24 @@ namespace avr
         __attribute__ ((used))
         __attribute__ ((section (".timer1_capt_vector")))
         const uint16_t AT90USB162Mic<ns>::Timer1::CaptInterrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
+    template<uint64_t ns>
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".usart1_rx_vector")))
+        const uint16_t AT90USB162Mic<ns>::Uart1::ReceiveCompleteInterrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
+    template<uint64_t ns>
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".usart1_udre_vector")))
+        const uint16_t AT90USB162Mic<ns>::Uart1::DataRegisterEmptyInterrupt<Functor>::interrupt
+            = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
+    template<uint64_t ns>
+    template<typename Functor>
+        __attribute__ ((used))
+        __attribute__ ((section (".usart1_tx_vector")))
+        const uint16_t AT90USB162Mic<ns>::Uart1::TransmitCompleteInterrupt<Functor>::interrupt
             = (uint16_t)(&Functor::INDEMIC_INTERRUPT_FUNCTION_NAME);
 }
 }
