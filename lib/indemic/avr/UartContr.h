@@ -52,6 +52,7 @@ class UartContr<avr::AVRMic<ns>, UartConfig, UartPeriphery>
         }
         static inline void enable()
         {
+            static_assert((16 * ns * UartConfig::baudRate) <= 1000000000., "Too high baud rate");
             constexpr uint16_t ubrrValue = static_cast<uint16_t>(
                 (1000000000. / (16 * ns * UartConfig::baudRate) - 1.) + 0.5
             );
