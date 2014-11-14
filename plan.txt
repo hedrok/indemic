@@ -29,11 +29,15 @@
     +013 PWM options for one pin
     -012 Calculate parameters at runtime
     -025 Make use of user-defined literals for nanoseconds etc
-- Enable RCC for timer only once even if both PeriodicRunner and PWMTimer are used
-- USART class
+- STM32: Enable RCC for timer only once even if both PeriodicRunner and PWMTimer are used
+- UART class
 - Copy elf patching scheme from STM32 to AVR so that original interrupts of
   avr-libc work.
 - Check for collisions of indemic interrupts with original interrupts (libopencm3
   for STM32 family and avr-libc for AVR family)
-- Rename all register and bit classes consistently, use only 'using' instead of typedef
+- Rename all register and bit classes consistently, use only 'using' instead of typedef,
+  change enums with values to constexprs, rename template parameters (e. g. add _) and
+  so on
 - Add doxygen to build system, add comments to all classes/methods etc
+- Add RegisterVisitor::assign<> that clears required bits first, sets both zeros and ones,
+  replace calls to RV::set() to RV::assign() where needed
