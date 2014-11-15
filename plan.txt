@@ -39,5 +39,5 @@
   change enums with values to constexprs, rename template parameters (e. g. add _) and
   so on
 - Add doxygen to build system, add comments to all classes/methods etc
-- Add RegisterVisitor::assign<> that clears required bits first, sets both zeros and ones,
++ Add RegisterVisitor::assign<> that clears required bits first, sets both zeros and ones,
   replace calls to RV::set() to RV::assign() where needed
