@@ -19,6 +19,7 @@
 #pragma once
 
 #include <indemic/generic/std.h>
+#include <indemic/generic/RegisterBitBundle.h>
 
 namespace IndeMic
 {
@@ -74,6 +75,15 @@ namespace
                 IndeMic::RegisterMultiSetter<Functor, Bits2...>::work();
             }
     };
+    template<typename Functor, typename Register, uint64_t value, uint64_t valueZeroes, typename... FirstBits, typename... Bits1, typename... Bits2>
+    class Worker<Functor, CurrentRegister<Register, value, valueZeroes>, BitsToProcess<RegisterBitBundle<FirstBits...>, Bits1...>, BitsForNext<Bits2...> >
+    {
+        public:
+            static void work()
+            {
+                Worker<Functor, CurrentRegister<Register, value, valueZeroes>, BitsToProcess<FirstBits..., Bits1...>, BitsForNext<Bits2...> >::work();
+            }
+    };
     template<typename Functor, typename Register, uint64_t value, uint64_t valueZeroes, typename FirstBit, typename... Bits1, typename... Bits2>
     class Worker<Functor, CurrentRegister<Register, value, valueZeroes>, BitsToProcess<FirstBit, Bits1...>, BitsForNext<Bits2...> >
     {
@@ -111,6 +121,15 @@ class RegisterMultiSetter<Functor>
     public:
         static void work()
         {
+        }
+};
+template<typename Functor, typename... Bits, typename... Others>
+class RegisterMultiSetter<Functor, RegisterBitBundle<Bits...>, Others...>
+{
+    public:
+        static void work()
+        {
+            RegisterMultiSetter<Functor, Bits..., Others...>::work();
         }
 };
 template<typename Functor, typename FirstBit, typename... Others>
