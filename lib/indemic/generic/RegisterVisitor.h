@@ -71,26 +71,15 @@ class RegisterVisitor
             RegisterMultiSetter<FunctorClear, Bits...>::work();
         }
     private:
-        class FunctorAssign
+        class FunctorDoNothing
         {
             public:
                 template<typename C>
                 static void processRegister()
                 {
-                    // std::numeric_limits<typename C::Register::value_t>::max()
-                    if ((C::valueZeroes | C::value) == static_cast<typename C::Register::value_t>(-1)) {
-                        C::Register::assign(RegisterValue<typename C::Register>(C::value));
-                    } else {
-                        if (C::valueZeroes) {
-                            C::Register::clear(RegisterValue<typename C::Register>(C::valueZeroes));
-                        }
-                        if (C::value) {
-                            C::Register::set(RegisterValue<typename C::Register>(C::value));
-                        }
-                    }
                 }
         };
-        class FunctorSet
+        class FunctorSetChecked
         {
             public:
                 template<typename C>
@@ -99,13 +88,88 @@ class RegisterVisitor
                     C::Register::set(RegisterValue<typename C::Register>(C::value));
                 }
         };
-        class FunctorClear
+        class FunctorClearChecked
         {
             public:
                 template<typename C>
                 static void processRegister()
                 {
                     C::Register::clear(RegisterValue<typename C::Register>(C::value));
+                }
+        };
+        class FunctorClearSet
+        {
+            public:
+                template<typename C>
+                static void processRegister()
+                {
+                    FunctorClear::processRegister<
+                        CurrentRegister<
+                            typename C::Register,
+                            C::valueZeroes,
+                            0
+                        >
+                    >();
+                    FunctorSet::processRegister<C>();
+                }
+        };
+        class FunctorJustAssign
+        {
+            public:
+                template<typename C>
+                static void processRegister()
+                {
+                    C::Register::assign(RegisterValue<typename C::Register>(C::value));
+                }
+        };
+        class FunctorAssign
+        {
+            public:
+                template<typename C>
+                static void processRegister()
+                {
+                    // std::numeric_limits<typename C::Register::value_t>::max()
+                    constexpr auto max_value = static_cast<typename C::Register::value_t>(-1);
+                    using F = typename std::tuple_element<
+                        (C::valueZeroes | C::value) == max_value ? 0 : 1,
+                        std::tuple<
+                            FunctorJustAssign,
+                            FunctorClearSet
+                        >
+                    >::type;
+                    F::template processRegister<C>();
+                }
+        };
+        class FunctorSet
+        {
+            public:
+                template<typename C>
+                static void processRegister()
+                {
+                    using F = typename std::tuple_element<
+                        C::value == 0 ? 0 : 1,
+                        std::tuple<
+                            FunctorDoNothing,
+                            FunctorSetChecked
+                        >
+                    >::type;
+                    F::template processRegister<C>();
+                }
+        };
+        class FunctorClear
+        {
+            public:
+                template<typename C>
+                static void processRegister()
+                {
+                    using F = typename std::tuple_element<
+                        C::value == 0 ? 0 : 1,
+                        std::tuple<
+                            FunctorDoNothing,
+                            FunctorClearChecked
+                        >
+                    >::type;
+                    F::template processRegister<C>();
                 }
         };
 };

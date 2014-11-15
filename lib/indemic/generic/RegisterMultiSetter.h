@@ -80,11 +80,28 @@ namespace
         public:
             static void work()
             {
-                if (std::is_same<Register, typename FirstBit::Register>::value) {
-                    Worker<Functor, CurrentRegister<Register, value | FirstBit::value, valueZeroes | (FirstBit::value ^ FirstBit::mask)>, BitsToProcess<Bits1...>, BitsForNext<Bits2...> >::work();
-                } else {
-                    Worker<Functor, CurrentRegister<Register, value, valueZeroes>, BitsToProcess<Bits1...>, BitsForNext<Bits2..., FirstBit> >::work();
-                }
+                using Next = typename std::tuple_element<
+                    std::is_same<Register, typename FirstBit::Register>::value,
+                    std::tuple<
+                        Worker<
+                            Functor,
+                            CurrentRegister<Register, value, valueZeroes>,
+                            BitsToProcess<Bits1...>,
+                            BitsForNext<Bits2..., FirstBit>
+                        >,
+                        Worker<
+                            Functor,
+                            CurrentRegister<
+                                Register,
+                                value | FirstBit::value,
+                                valueZeroes | (FirstBit::value ^ FirstBit::mask)
+                            >,
+                            BitsToProcess<Bits1...>,
+                            BitsForNext<Bits2...>
+                        >
+                    >
+                >::type;
+                Next::work();
             }
     };
 }
