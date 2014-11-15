@@ -31,7 +31,7 @@ constexpr IndeMic::RegisterBit<TCCR0A, 7> TCCR0A::COM0A1;
 
 void test()
 {
-    TCCR0A::set(TCCR0A::COM0A1.mask<checkvalue>());
+    TCCR0A::set(TCCR0A::COM0A1.ceValue<checkvalue>());
 }
 
 }

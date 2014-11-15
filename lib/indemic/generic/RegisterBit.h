@@ -42,6 +42,7 @@ class RegisterBit
     public:
         typedef R Register;
         enum {value = (tvalue << bitIndex)};
+        enum {mask = ((1 << width) - 1) << bitIndex};
 
         template<uint64_t v>
         class Value : public RegisterBit<R, bitIndex, width, v> {};
@@ -60,7 +61,7 @@ class RegisterBit
         }
 
         template<uint8_t v = ((1 << width) - 1)>
-        constexpr RegisterValue<R> mask()
+        constexpr RegisterValue<R> ceValue()
         {
             static_assert(v >= 0, "Value of register bit cannot be negative");
             static_assert(v < (1 << width), "Value of register bit doesn't fit");

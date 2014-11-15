@@ -25,17 +25,29 @@ namespace IndeMic
 {
 
 /**
- * This class is responsible for setting/clearing bits of
+ * This class is responsible for assigning/setting/clearing bits of
  * different registers. All bits must be known at compilation
  * time.
  * Bits are grouped togeather by register and each
- * register is modified by one operation.
+ * register is modified by one operation. (possibly two in case of
+ * assign)
  * Registers are modified in order in which they first appear
  * in Bit's
  */
 class RegisterVisitor
 {
     public:
+        /**
+         * Clear bits of registers
+         * @param... Bits - arbitrarary number of register bits that should be assigned
+         *           Each of them should have ::Register typedef that is unique for
+         *           each register, and ::value of uint64_t type.
+         */
+        template<typename... Bits>
+        inline static void assign()
+        {
+            RegisterMultiSetter<FunctorAssign, Bits...>::work();
+        }
         /**
          * Set bits of registers
          * @param... Bits - arbitrarary number of register bits that should be set
@@ -59,6 +71,25 @@ class RegisterVisitor
             RegisterMultiSetter<FunctorClear, Bits...>::work();
         }
     private:
+        class FunctorAssign
+        {
+            public:
+                template<typename C>
+                static void processRegister()
+                {
+                    // std::numeric_limits<typename C::Register::value_t>::max()
+                    if ((C::valueZeroes | C::value) == static_cast<typename C::Register::value_t>(-1)) {
+                        C::Register::assign(RegisterValue<typename C::Register>(C::value));
+                    } else {
+                        if (C::valueZeroes) {
+                            C::Register::clear(RegisterValue<typename C::Register>(C::valueZeroes));
+                        }
+                        if (C::value) {
+                            C::Register::set(RegisterValue<typename C::Register>(C::value));
+                        }
+                    }
+                }
+        };
         class FunctorSet
         {
             public:
