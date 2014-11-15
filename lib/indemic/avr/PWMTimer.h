@@ -55,14 +55,18 @@ class PWMTimer<avr::AVRMic<ns>, Timer, periodNs, Channels...>
          */
         static inline void enable()
         {
-            Timer::setFastPWMTopOcrAMode();
+            RegisterVisitor::assign<
+                typename Timer::WgmBits::FastPWMTopOcrAMode
+            >();
         }
         /**
          * Stop PWM
          */
         static inline void disable()
         {
-            Timer::setNormalMode();
+            RegisterVisitor::assign<
+                typename Timer::WgmBits::NormalMode
+            >();
         }
         /**
          * Number of channels

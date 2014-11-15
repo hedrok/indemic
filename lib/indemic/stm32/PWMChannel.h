@@ -50,7 +50,7 @@ class PWMChannel<stm32::STM32Mic<Clock>, Timer, Pin, periodNs>
             static_assert(nanoseconds < periodNs, "Pulse width must be less than period");
             constexpr uint64_t arrValue = stm32::TimerPeriodSetter<Timer, periodNs>::arrValue;
             constexpr typename Timer::counter_t value = (arrValue + 1) * static_cast<double>(nanoseconds) / periodNs - 1;
-            OutputCompareUnit::Ccr::set(value);
+            OutputCompareUnit::Ccr::assign(value);
         }
         /**
          * Enable PWM on this channel
@@ -63,11 +63,7 @@ class PWMChannel<stm32::STM32Mic<Clock>, Timer, Pin, periodNs>
             Pin::Port::template setAlternateFunction<Pin>(Timer::alternateFunctionValue);
             Pin::Port::template setMode<Pin>(GPIO_MODE_AF);
 
-            RegisterVisitor::clear<
-                typename OutputCompareUnit::Cc1s,
-                typename OutputCompareUnit::Oc1m
-            >();
-            RegisterVisitor::set<
+            RegisterVisitor::assign<
                 typename OutputCompareUnit::Cc1s::Output,
                 typename OutputCompareUnit::Oc1m::PWMMode1,
                 typename OutputCompareUnit::Cce

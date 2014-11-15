@@ -174,15 +174,7 @@ class RCCInitializerSTM32F4
             constexpr int q = M::RCCConf::inputFreq * n / m / PeriphFreq;
             static_assert(q >= minQ && q <= maxQ, "Could not select q");
 
-
-            RegisterVisitor::clear<
-                typename M::RccPllCfgrM,
-                typename M::RccPllCfgrN,
-                typename M::RccPllCfgrP,
-                typename M::RccPllCfgrQ,
-                typename M::RccPllCfgrSrc
-            >();
-            RegisterVisitor::set<
+            RegisterVisitor::assign<
                 typename M::RccPllCfgrM::template Value<m>,      // Division factor for PLL input
                 typename M::RccPllCfgrN::template Value<n>,      // multiplication for VCO
                 typename M::RccPllCfgrP::template Value<pValue>, // Main system clock division factor
@@ -217,7 +209,7 @@ class RCCInitializerSTM32F4
             constexpr int ppre2Value = getPpreValue<ppre2Div>();
             constexpr int ppre1Value = getPpreValue<ppre1Div>();
 
-            RegisterVisitor::set<
+            RegisterVisitor::assign<
                 typename M::RccCfgrPpre2::template Value<ppre2Value>,
                 typename M::RccCfgrPpre1::template Value<ppre1Value>,
                 typename M::RccCfgrSw::Pll
