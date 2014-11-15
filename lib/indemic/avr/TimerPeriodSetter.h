@@ -82,7 +82,7 @@ class TimerPeriodSetter<M, Timer, periodNs>::PeriodSetterHelper<CsValue, 1>
         static constexpr const uint64_t ocraValue = TimerPeriodSetter<M, Timer, periodNs>::clocks / CsValue::prescaler - 1;
         static void f()
         {
-            RegisterVisitor::set<typename Timer::Cs::template Value<CsValue::key> >();
+            RegisterVisitor::assign<typename Timer::Cs::template Value<CsValue::key> >();
             Timer::OcrA::assign(ocraValue);
         }
 };

@@ -283,15 +283,17 @@ namespace avr
                 {
                 };
 
-                static inline void setCTCMode()
+                struct WgmBits
                 {
-                    RegisterVisitor::clear<Wgm2, Wgm0>();
-                    RegisterVisitor::set<Wgm1>();
-                }
-                static inline void setFastPWMTopOcrAMode()
-                {
-                    RegisterVisitor::set<Wgm2, Wgm1, Wgm0>();
-                }
+                    using CTCMode = RegisterBitBundle<
+                        typename Wgm2::template Value<0>,
+                        Wgm1,
+                        typename Wgm0::template Value<0>
+                    >;
+                    using FastPWMTopOcrAMode = RegisterBitBundle<
+                        Wgm2, Wgm1, Wgm0
+                    >;
+                };
             };
 
             // Timer1 Registers
@@ -508,15 +510,18 @@ namespace avr
                 {
                 };
 
-                static inline void setCTCMode()
+                struct WgmBits
                 {
-                    RegisterVisitor::clear<Wgm3, Wgm1, Wgm0>();
-                    RegisterVisitor::set<Wgm2>();
-                }
-                static inline void setFastPWMTopOcrAMode()
-                {
-                    RegisterVisitor::set<Wgm3, Wgm2, Wgm1, Wgm0>();
-                }
+                    using CTCMode = RegisterBitBundle<
+                        typename Wgm3::template Value<0>,
+                        Wgm2,
+                        typename Wgm1::template Value<0>,
+                        typename Wgm0::template Value<0>
+                    >;
+                    using FastPWMTopOcrAMode = RegisterBitBundle<
+                        Wgm3, Wgm2, Wgm1, Wgm0
+                    >;
+                };
             };
     };
 

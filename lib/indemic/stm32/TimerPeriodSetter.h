@@ -50,8 +50,7 @@ class TimerPeriodSetter
 
         static inline void setPeriod()
         {
-            RegisterVisitor::clear<typename Timer::Ckd>();
-            RegisterVisitor::set<typename Timer::Ckd::template Value<ckdValue> >();
+            RegisterVisitor::assign<typename Timer::Ckd::template Value<ckdValue> >();
             Timer::Psc::assign(pscValue);
             Timer::Arr::assign(arrValue);
         }

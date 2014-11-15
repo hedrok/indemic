@@ -19,6 +19,7 @@
 #pragma once
 
 #include <indemic/generic/std.h>
+#include <indemic/generic/RegisterBitBundle.h>
 
 namespace IndeMic
 {
@@ -33,8 +34,9 @@ namespace IndeMic
  * in Bit's
  * @param Functor - Function to call on collected register value
  *                  Must have function processRegister<RegisterValue>()
- *                  RegisterValue will have typedef Register for RegisterBase
- *                  and ::value (uint64_t)
+ *                  RegisterValue will have typedef Register for RegisterBase,
+ *                  ::value (uint64_t) and ::valueZeroes (uint64_t) - all bits
+ *                  that have zero in theri value will have 1 in this mask.
  * @param... Bits - arbitrarary number of register bits that should be set
  *           Each of them should have ::Register typedef that is unique for
  *           each register, and ::value of uint64_t type.
@@ -50,39 +52,66 @@ namespace
     class BitsToProcess {};
     template<typename... Bits>
     class BitsForNext {};
-    template<typename R, uint64_t v>
+    template<typename R, uint64_t v, uint64_t vz>
     class CurrentRegister
     {
         public:
             typedef R Register;
             enum {value = v};
+            enum {valueZeroes = vz};
     };
 
     template<typename... Args>
     class Worker
     {
     };
-    template<typename Functor, typename Register, uint64_t value, typename... Bits2>
-    class Worker<Functor, CurrentRegister<Register, value>, BitsToProcess<>, BitsForNext<Bits2...> >
+    template<typename Functor, typename Register, uint64_t value, uint64_t valueZeroes, typename... Bits2>
+    class Worker<Functor, CurrentRegister<Register, value, valueZeroes>, BitsToProcess<>, BitsForNext<Bits2...> >
     {
         public:
             static void work()
             {
-                Functor::template processRegister<CurrentRegister<Register, value> >();
+                Functor::template processRegister<CurrentRegister<Register, value, valueZeroes> >();
                 IndeMic::RegisterMultiSetter<Functor, Bits2...>::work();
             }
     };
-    template<typename Functor, typename Register, uint64_t value, typename FirstBit, typename... Bits1, typename... Bits2>
-    class Worker<Functor, CurrentRegister<Register, value>, BitsToProcess<FirstBit, Bits1...>, BitsForNext<Bits2...> >
+    template<typename Functor, typename Register, uint64_t value, uint64_t valueZeroes, typename... FirstBits, typename... Bits1, typename... Bits2>
+    class Worker<Functor, CurrentRegister<Register, value, valueZeroes>, BitsToProcess<RegisterBitBundle<FirstBits...>, Bits1...>, BitsForNext<Bits2...> >
     {
         public:
             static void work()
             {
-                if (std::is_same<Register, typename FirstBit::Register>::value) {
-                    Worker<Functor, CurrentRegister<Register, value | FirstBit::value>, BitsToProcess<Bits1...>, BitsForNext<Bits2...> >::work();
-                } else {
-                    Worker<Functor, CurrentRegister<Register, value>, BitsToProcess<Bits1...>, BitsForNext<Bits2..., FirstBit> >::work();
-                }
+                Worker<Functor, CurrentRegister<Register, value, valueZeroes>, BitsToProcess<FirstBits..., Bits1...>, BitsForNext<Bits2...> >::work();
+            }
+    };
+    template<typename Functor, typename Register, uint64_t value, uint64_t valueZeroes, typename FirstBit, typename... Bits1, typename... Bits2>
+    class Worker<Functor, CurrentRegister<Register, value, valueZeroes>, BitsToProcess<FirstBit, Bits1...>, BitsForNext<Bits2...> >
+    {
+        public:
+            static void work()
+            {
+                using Next = typename std::tuple_element<
+                    std::is_same<Register, typename FirstBit::Register>::value,
+                    std::tuple<
+                        Worker<
+                            Functor,
+                            CurrentRegister<Register, value, valueZeroes>,
+                            BitsToProcess<Bits1...>,
+                            BitsForNext<Bits2..., FirstBit>
+                        >,
+                        Worker<
+                            Functor,
+                            CurrentRegister<
+                                Register,
+                                value | FirstBit::value,
+                                valueZeroes | (FirstBit::value ^ FirstBit::mask)
+                            >,
+                            BitsToProcess<Bits1...>,
+                            BitsForNext<Bits2...>
+                        >
+                    >
+                >::type;
+                Next::work();
             }
     };
 }
@@ -94,13 +123,22 @@ class RegisterMultiSetter<Functor>
         {
         }
 };
+template<typename Functor, typename... Bits, typename... Others>
+class RegisterMultiSetter<Functor, RegisterBitBundle<Bits...>, Others...>
+{
+    public:
+        static void work()
+        {
+            RegisterMultiSetter<Functor, Bits..., Others...>::work();
+        }
+};
 template<typename Functor, typename FirstBit, typename... Others>
 class RegisterMultiSetter<Functor, FirstBit, Others...>
 {
     public:
         static void work()
         {
-            Worker<Functor, CurrentRegister<typename FirstBit::Register, FirstBit::value>, BitsToProcess<Others...>, BitsForNext<> >::work();
+            Worker<Functor, CurrentRegister<typename FirstBit::Register, FirstBit::value, FirstBit::value ^ FirstBit::mask>, BitsToProcess<Others...>, BitsForNext<> >::work();
         }
 };
 

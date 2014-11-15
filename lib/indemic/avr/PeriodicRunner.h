@@ -46,7 +46,7 @@ class PeriodicRunner<avr::AVRMic<ns>, Timer, Functor>
         {
             static_assert(nanoseconds > 2 * M::nsPerClock, "Run function each clock cycle is too dangerous");
             avr::TimerPeriodSetter<M, Timer, nanoseconds>::setPeriod();
-            Timer::setCTCMode();
+            RegisterVisitor::assign<typename Timer::WgmBits::CTCMode>();
         }
 
         static inline void clearCounter()

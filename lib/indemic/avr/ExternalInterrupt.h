@@ -62,7 +62,10 @@ class ExternalInterrupt
          */
         static inline void interruptOnRisingEdge()
         {
-            RegisterVisitor::set<typename SourceDescription::ISCn1, typename SourceDescription::ISCn0>();
+            RegisterVisitor::assign<
+                typename SourceDescription::ISCn1,
+                typename SourceDescription::ISCn0
+            >();
         }
 
         /**
@@ -70,8 +73,10 @@ class ExternalInterrupt
          */
         static inline void interruptOnFallingEdge()
         {
-            RegisterVisitor::clear<SourceDescription::ISCn0>();
-            RegisterVisitor::set<SourceDescription::ISCn1>();
+            RegisterVisitor::assign<
+                typename SourceDescription::ISCn1,
+                typename SourceDescription::ISCn0::template Value<0>
+            >();
         }
 
         /**
@@ -79,8 +84,10 @@ class ExternalInterrupt
          */
         static inline void interruptOnAnyEdge()
         {
-            RegisterVisitor::clear<SourceDescription::ISCn1>();
-            RegisterVisitor::set<SourceDescription::ISCn0>();
+            RegisterVisitor::assign<
+                typename SourceDescription::ISCn1::template Value<0>,
+                typename SourceDescription::ISCn0
+            >();
         }
 
         /**
@@ -88,7 +95,10 @@ class ExternalInterrupt
          */
         static inline void interruptOnLowLevel()
         {
-            RegisterVisitor::clear<SourceDescription::ISCn1, SourceDescription::ISCn0>();
+            RegisterVisitor::assign<
+                typename SourceDescription::ISCn1::template Value<0>,
+                typename SourceDescription::ISCn0::template Value<0>
+            >();
         }
 };
 
