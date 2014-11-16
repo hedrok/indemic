@@ -39,8 +39,12 @@ enum class UartParity
  * @param parityCheck - off, even or odd (use constants from UartParity
  * @param stopBits - number of stop bits (either 1 or 2)
  */
-template<uint64_t _baudRate, uint8_t _charWidth, UartParity _parityCheck, uint8_t _stopBits>
-class UartConfig
+template<
+    uint64_t _baudRate,
+    uint8_t _charWidth,
+    UartParity _parityCheck,
+    uint8_t _stopBits
+> class UartConfig
 {
     static_assert(_charWidth >= 5 && _charWidth <= 9, "Wrong charWidth");
     static_assert(_stopBits >= 1 && _stopBits <= 2, "Wrong stopBits");

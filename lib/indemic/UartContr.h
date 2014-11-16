@@ -30,11 +30,18 @@ namespace IndeMic
  * @param Microcontroller
  * @param UartConfig - uart configuration, nine-bit is unsupported
  * @param UartPeriphery - which uart to use
+ * @param RxPin - IOPin of Rx, void by default as not used by all families
+ * @param TxPin - IOPin of Tx, void by default as not used by all families
  */
-template<typename M, typename UartConfig, typename UartPeriphery>
-class UartContr
+template<
+    typename M,
+    typename UartConfig,
+    typename UartPeriphery,
+    typename RxPin = void,
+    typename TxPin = void
+> class UartContr
 {
-    typedef UartContr<typename M::parent, UartConfig, UartPeriphery> P;
+    typedef UartContr<typename M::parent, UartConfig, UartPeriphery, RxPin, TxPin> P;
     public:
         /**
          * canWriteData

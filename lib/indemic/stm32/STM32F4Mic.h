@@ -23,12 +23,14 @@
 
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/timer.h>
+#include <libopencm3/stm32/usart.h>
 #include <libopencm3/cm3/nvic.h>
 
 #include <indemic/stm32/STM32Mic.h>
 #include <indemic/stm32/Port.h>
 #include <indemic/stm32/IOPin.h>
 #include <indemic/stm32/Timer.h>
+#include <indemic/stm32/UsartPeriphery.h>
 #include <indemic/stm32/RCCInitializer.h>
 
 namespace IndeMic
@@ -43,9 +45,13 @@ namespace stm32
             typedef STM32F4Mic M;
             typedef RCCInitializerSTM32F4<STM32F4Mic<R>, 168000000, 84000000, 42000000, 48000000> Clock;
 
+            typedef Port<M, GPIOA> PortA;
             typedef Port<M, GPIOB> PortB;
             typedef Port<M, GPIOC> PortC;
             typedef Port<M, GPIOD> PortD;
+
+            typedef IOPin<M, PortA, 2> PA2Pin;
+            typedef IOPin<M, PortA, 3> PA3Pin;
 
             typedef IOPin<M, PortD, 12> PD12Pin;
             typedef IOPin<M, PortD, 13> PD13Pin;
@@ -56,6 +62,7 @@ namespace stm32
             class RccPllCfgr : public RegisterBase<M, RCC_BASE + 0x04, RccPllCfgr> {};
             class RccCfgr    : public RegisterBase<M, RCC_BASE + 0x08, RccCfgr> {};
             class RccApb1Enr : public RegisterBase<M, RCC_BASE + 0x40, RccApb1Enr> {};
+            class RccApb2Enr : public RegisterBase<M, RCC_BASE + 0x44, RccApb2Enr> {};
 
             class RccCrHsiOn  : public RegisterBit<RccCr,  0> {};
             class RccCrHsiRdy : public RegisterBit<RccCr,  1> {};
@@ -110,6 +117,43 @@ namespace stm32
                 public:
                     class RccEn : public RegisterBit<RccApb1Enr, 2> {};
                     enum { irqNumber = NVIC_TIM4_IRQ };
+            };
+
+            class Usart1 : public UsartPeriphery<M, USART1, InterruptUsart1, Clock::APB2Freq, GPIO_AF7>
+            {
+                public:
+                    using RccEnBit = RegisterBit<RccApb2Enr, 4>;
+                    enum { irqNumber = NVIC_USART1_IRQ };
+            };
+            class Usart2 : public UsartPeriphery<M, USART2, InterruptUsart2, Clock::APB1Freq, GPIO_AF7>
+            {
+                public:
+                    using RccEnBit = RegisterBit<RccApb1Enr, 17>;
+                    enum { irqNumber = NVIC_USART2_IRQ };
+            };
+            class Usart3 : public UsartPeriphery<M, USART3, InterruptUsart3, Clock::APB1Freq, GPIO_AF7>
+            {
+                public:
+                    using RccEnBit = RegisterBit<RccApb1Enr, 18>;
+                    enum { irqNumber = NVIC_USART3_IRQ };
+            };
+            class Uart4 : public UsartPeriphery<M, UART4, InterruptUart4, Clock::APB1Freq, GPIO_AF8>
+            {
+                public:
+                    using RccEnBit = RegisterBit<RccApb1Enr, 19>;
+                    enum { irqNumber = NVIC_UART4_IRQ };
+            };
+            class Uart5 : public UsartPeriphery<M, UART5, InterruptUart5, Clock::APB1Freq, GPIO_AF8>
+            {
+                public:
+                    using RccEnBit = RegisterBit<RccApb1Enr, 20>;
+                    enum { irqNumber = NVIC_UART5_IRQ };
+            };
+            class Usart6 : public UsartPeriphery<M, USART6, InterruptUsart6, Clock::APB2Freq, GPIO_AF8>
+            {
+                public:
+                    class RccEnBit : public RegisterBit<RccApb2Enr, 5> {};
+                    enum { irqNumber = NVIC_USART6_IRQ };
             };
     };
     template<typename R>

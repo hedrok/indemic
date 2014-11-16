@@ -20,6 +20,8 @@
  * UART sample using multi-platform library IndeMic
  */
 
+#include <indemic/UartConfig.h>
+
 /**
  * Simple Uart Sample
  *
