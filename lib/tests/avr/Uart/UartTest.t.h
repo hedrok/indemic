@@ -68,11 +68,18 @@ class UartTestSuite : public CxxTest::TestSuite
         }
 
         /**
-         * testing Uart of AT90USB
+         * testing blocking Uart of AT90USB
          */
-        void testUart()
+        void testUartBlocking()
         {
             runTest("Uart/uart.at90usb162.avr.elf", "abc", "bcd");
+        }
+        /**
+         * testing Uart of AT90USB implemented via interrupts
+         */
+        void testUartInterrupts()
+        {
+            runTest("Uart/uart-interrupts.at90usb162.avr.elf", "aA0", "abcABC012");
         }
 
     private:

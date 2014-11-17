@@ -5,3 +5,8 @@ avr_uart_elf = indemic_env.indemicBoardSimAvr(
     ['avr-uart-at90usb.cpp', 'avr-mcu.c'],
 )
 Depends(avrtest_node, avr_uart_elf)
+avr_uarti_elf = indemic_env.indemicBoardSimAvr(
+    'uart-interrupts.at90usb162.avr.elf',
+    ['avr-uart-interrupts-at90usb.cpp', 'avr-mcu.c'],
+)
+Depends(avrtest_node, avr_uarti_elf)

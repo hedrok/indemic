@@ -60,12 +60,40 @@ template<
             P::disable();
         }
         /**
+         * Disable interrupt on read available
+         */
+        static void disableReadInt()
+        {
+            P::disableReadInt();
+        }
+        /**
+         * Disable interrupt on write available
+         */
+        static void disableWriteInt()
+        {
+            P::disableWriteInt();
+        }
+        /**
          * Enables uart, sets parity, byte width, parity, baud
          * (configuration can be done beforehand in constructor)
          */
         static inline void enable()
         {
             P::enable();
+        }
+        /**
+         * Enable interrupt on read available
+         */
+        static void enableReadInt()
+        {
+            P::enableReadInt();
+        }
+        /**
+         * Enable interrupt on write available
+         */
+        static void enableWriteInt()
+        {
+            P::enableWriteInt();
         }
         /**
          * isDataAvailable
@@ -123,20 +151,23 @@ template<
         }
 
         /**
-         * Functor::INDEMIC_INTERRUPT_FUNCTION_NAME() will be called each time
-         * data is available via UART
+         * Instantiate user interrupts
+         *
+         * Don't forget to call init()
+         *
+         * @param FunctorReadAvailable This functor will be called each time
+         *                             character is ready to be read via this UART
+         * @param FunctorWriteAvailable This functor will be called each time
+         *                              character is ready to be written to this UART
          */
-        template<typename Functor>
-        class ReadAvailableInterrupt : P::template ReadAvailableInterrupt<Functor>
-        {};
-
-        /**
-         * Functor::INDEMIC_INTERRUPT_FUNCTION_NAME() will be called each time
-         * data can be written to UART
-         */
-        template<typename Functor>
-        class WriteAvailableInterrupt : P::template WriteAvailableInterrupt<Functor>
-        {};
+        template<typename FunctorReadAvailable, typename FunctorWriteAvailable>
+        class Interrupts
+        {
+            using PInt = typename P::template Interrupts<FunctorReadAvailable, FunctorWriteAvailable>;
+            static_assert(PInt::t == 1, "Instantiate PInt failed");
+            public:
+                static void init(){}
+        };
 };
 
 }

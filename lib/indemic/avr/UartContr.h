@@ -50,6 +50,14 @@ class UartContr<avr::AVRMic<ns>, UartConfig, UartPeriphery>
                 typename UartPeriphery::TxEn
             >();
         }
+        static void disableReadInt()
+        {
+            RegisterVisitor::clear<typename UartPeriphery::RxcIe>();
+        }
+        static void disableWriteInt()
+        {
+            RegisterVisitor::clear<typename UartPeriphery::UdreIe>();
+        }
         static inline void enable()
         {
             static_assert((16 * ns * UartConfig::baudRate) <= 1000000000., "Too high baud rate");
@@ -89,6 +97,14 @@ class UartContr<avr::AVRMic<ns>, UartConfig, UartPeriphery>
                 typename UartPeriphery::TxEn
             >();
         }
+        static void enableReadInt()
+        {
+            RegisterVisitor::set<typename UartPeriphery::RxcIe>();
+        }
+        static void enableWriteInt()
+        {
+            RegisterVisitor::set<typename UartPeriphery::UdreIe>();
+        }
         static inline bool isDataAvailable()
         {
             return UartPeriphery::Rxc::getValue();
@@ -110,14 +126,7 @@ class UartContr<avr::AVRMic<ns>, UartConfig, UartPeriphery>
                 "Something very wrong. This line should just instantiate Interrupt template"
             );
             public:
-                static void enable()
-                {
-                    RegisterVisitor::set<typename UartPeriphery::RxcIe>();
-                }
-                static void disable()
-                {
-                    RegisterVisitor::clear<typename UartPeriphery::RxcIe>();
-                }
+                enum {t = 1};
         };
 
         template<typename Functor>
@@ -128,14 +137,36 @@ class UartContr<avr::AVRMic<ns>, UartConfig, UartPeriphery>
                 "Something very wrong. This line should just instantiate Interrupt template"
             );
             public:
-                static void enable()
-                {
-                    RegisterVisitor::set<typename UartPeriphery::UdreIe>();
-                }
-                static void disable()
-                {
-                    RegisterVisitor::clear<typename UartPeriphery::UdreIe>();
-                }
+                enum {t = 1};
+        };
+
+        class EmptyInterrupt
+        {
+            public:
+                enum {t = 1};
+        };
+
+        template<typename FunctorReadAvailable, typename FunctorWriteAvailable>
+        class Interrupts
+        {
+            using ReadInterrupt = typename std::tuple_element<
+                std::is_same<FunctorReadAvailable, void>::value ? 0 : 1,
+                std::tuple<
+                    EmptyInterrupt,
+                    ReadAvailableInterrupt<FunctorReadAvailable>
+                >
+            >::type;
+            using WriteInterrupt = typename std::tuple_element<
+                std::is_same<FunctorWriteAvailable, void>::value ? 0 : 1,
+                std::tuple<
+                    EmptyInterrupt,
+                    WriteAvailableInterrupt<FunctorWriteAvailable>
+                >
+            >::type;
+            static_assert(ReadInterrupt::t == 1, "Instantiate ReadInterrupt failed");
+            static_assert(WriteInterrupt::t == 1, "Instantiate WriteInterrupt failed");
+            public:
+                enum {t = 1};
         };
 };
 
