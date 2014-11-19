@@ -30,7 +30,7 @@
     -012 Calculate parameters at runtime
     -025 Make use of user-defined literals for nanoseconds etc
 - STM32: Enable RCC for timer only once even if both PeriodicRunner and PWMTimer are used
-- UART class
++ UART class
 - Copy elf patching scheme from STM32 to AVR so that original interrupts of
   avr-libc work.
 - Check for collisions of indemic interrupts with original interrupts (libopencm3
