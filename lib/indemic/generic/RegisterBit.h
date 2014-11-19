@@ -27,21 +27,22 @@ namespace IndeMic
  * Represents one microcontroller register bit
  * @param R - Register containing this bit
  * @param bitIndex
- * @param width - maximum number of bits of value
+ * @param twidth - maximum number of bits of value
  * @param v - static value of register bit(s)
  */
-template <typename R, uint8_t bitIndex, uint8_t width = 1, uint64_t tvalue = ((1 << width) - 1)>
+template <typename R, uint8_t bitIndex, uint8_t twidth = 1, uint64_t tvalue = ((1 << twidth) - 1)>
 class RegisterBit
 {
     static_assert(bitIndex >= 0, "bitIndex cannot be negative");
-    static_assert(width > 0, "width must be positive");
-    static_assert(bitIndex + width <= (sizeof(typename R::value_t) * 8), "too wide bitfield");
+    static_assert(twidth > 0, "twidth must be positive");
+    static_assert(bitIndex + twidth <= (sizeof(typename R::value_t) * 8), "too wide bitfield");
     static_assert(tvalue >= 0, "value cannot be negative");
-    static_assert(tvalue < (1 << width), "value cannot be larger than (1 << width)");
+    static_assert(tvalue < (1 << twidth), "value cannot be larger than (1 << twidth)");
 
     public:
         typedef R Register;
         enum {value = (tvalue << bitIndex)};
+        enum {width = twidth};
         enum {mask = ((1 << width) - 1) << bitIndex};
 
         template<uint64_t v>
