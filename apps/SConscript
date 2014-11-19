@@ -1,4 +1,4 @@
-for d in ('led', 'pwm', 'uart'):
+for d in ('led', 'pwm', 'uart', 'uart-interrupts'):
     SConscript(
         [d + '/SConscript'],
         variant_dir = d + '/_build',
