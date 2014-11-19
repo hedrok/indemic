@@ -49,6 +49,14 @@ class UartContr<stm32::STM32Mic<Clock>, UartConfig, UartPeriphery, RxPin, TxPin>
                 typename UartPeriphery::UeBit
             >();
         }
+        static void disableReadInt()
+        {
+            RegisterVisitor::clear<typename UartPeriphery::RxneIeBit>();
+        }
+        static void disableWriteInt()
+        {
+            RegisterVisitor::clear<typename UartPeriphery::TxeIeBit>();
+        }
         static inline void enable()
         {
             constexpr double baudRateDouble = 1e9 / (UartPeriphery::nsPerClock * UartConfig::baudRate);
@@ -93,7 +101,6 @@ class UartContr<stm32::STM32Mic<Clock>, UartConfig, UartPeriphery, RxPin, TxPin>
                 >
             >::type;
             RegisterVisitor::assign<
-                typename UartPeriphery::RccEnBit,
                 typename UartPeriphery::DivFractionBits::template Value<fractionPart>,
                 typename UartPeriphery::DivMantissaBits::template Value<mantissaPart>,
                 UartCharacterWidthValue,
@@ -103,6 +110,14 @@ class UartContr<stm32::STM32Mic<Clock>, UartConfig, UartPeriphery, RxPin, TxPin>
                 typename UartPeriphery::ReBit,
                 typename UartPeriphery::TeBit
             >();
+        }
+        static void enableReadInt()
+        {
+            RegisterVisitor::set<typename UartPeriphery::RxneIeBit>();
+        }
+        static void enableWriteInt()
+        {
+            RegisterVisitor::set<typename UartPeriphery::TxeIeBit>();
         }
         static inline bool isDataAvailable()
         {
@@ -117,9 +132,91 @@ class UartContr<stm32::STM32Mic<Clock>, UartConfig, UartPeriphery, RxPin, TxPin>
             UartPeriphery::DrRegS::assign(byte);
         }
 
-        // TODO:
-        // template<typename Functor> class ReadAvailableInterrupt
-        // template<typename Functor> class WriteAvailableInterrupt;
+        template<typename Bit, typename Functor>
+        class CheckBitAndCallFunctor
+        {
+            public:
+                static void call()
+                {
+                    if (Bit::getValue()) {
+                        Functor::INDEMIC_INTERRUPT_FUNCTION_NAME();
+                    }
+                }
+        };
+        class EmptyInterrupt
+        {
+            public:
+                static void call() {}
+        };
+
+        template<typename FunctorReadAvailable, typename FunctorWriteAvailable>
+        class FunctorWrapper
+        {
+            using ReadFunctor = typename std::tuple_element<
+                std::is_same<FunctorReadAvailable, void>::value ? 0 : 1,
+                std::tuple<
+                    EmptyInterrupt,
+                    CheckBitAndCallFunctor<
+                        typename UartPeriphery::RxneBit,
+                        FunctorReadAvailable
+                    >
+                >
+            >::type;
+            using WriteFunctor = typename std::tuple_element<
+                std::is_same<FunctorWriteAvailable, void>::value ? 0 : 1,
+                std::tuple<
+                    EmptyInterrupt,
+                    CheckBitAndCallFunctor<
+                        typename UartPeriphery::TxeBit,
+                        FunctorWriteAvailable
+                    >
+                >
+            >::type;
+            public:
+                INDEMIC_INTERRUPT_FUNCTION __attribute__((interrupt)) __attribute__((used))
+                {
+                    ReadFunctor::call();
+                    WriteFunctor::call();
+                }
+                enum {t = 1};
+        };
+        template<typename FunctorReadAvailable, typename FunctorWriteAvailable>
+        class Interrupts
+        {
+            static_assert(
+                UartPeriphery::template Interrupt<
+                    FunctorWrapper<
+                        FunctorReadAvailable,
+                        FunctorWriteAvailable
+                    >
+                >::t == 1,
+                "instantiate Interrupt::interrupt"
+            );
+            static void initNvic() __attribute__((constructor))
+                                    __attribute__((used))
+            {
+                nvic_enable_irq(UartPeriphery::irqNumber);
+            }
+            public:
+                enum {t = 1};
+        };
+    private:
+        /**
+         * Enabling RCC beforehand, because some functionality starts
+         * working after this. For example, setting RxneIe bit before 
+         * enabling RCC does not have effect even after RCC is set,
+         * so without this
+         * ::enableReadInt()
+         * ::enable()
+         * won't work for STM32 which is really unexpected.
+         */
+        static void initClock() __attribute__((constructor))
+                                __attribute__((used))
+        {
+            RegisterVisitor::assign<
+                typename UartPeriphery::RccEnBit
+            >();
+        }
 };
 
 }

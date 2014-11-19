@@ -1,4 +1,4 @@
 Import('indemic_env')
 
 indemic_env.indemicBoard('cnc.at90usb162.avr.elf', 'boards/cnc.at90usb162.avr.cpp')
-#indemic_env.indemicBoard('discovery.stm32f407vgt6.stm32.elf', 'boards/discovery.stm32f407vgt6.stm32.cpp')
+indemic_env.indemicBoard('discovery.stm32f407vgt6.stm32.elf', 'boards/discovery.stm32f407vgt6.stm32.cpp')
