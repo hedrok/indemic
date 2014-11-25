@@ -88,7 +88,7 @@ class LinkerScriptBuilder:
     Class for 'building' linker scripts.
     Gets original linker script from GCC and patches it with interrupts
     """
-    def __init__(self):
+    def __init__(self, indemicRoot):
         self.linkerScripts = {}
         self.env = Environment(
             BUILDERS = {
@@ -100,6 +100,7 @@ class LinkerScriptBuilder:
             ENV = {'PATH' : os.environ['PATH']},
         )
         self.filepathByMicro = {}
+        self._indemicRoot = indemicRoot
 
     def _getLinkerScriptFromGCCOutput(self, path):
         """
@@ -139,7 +140,7 @@ class LinkerScriptBuilder:
         @param micro e.g. at90usb162
         @returns List of interrupts for microcontroller
         """
-        ldscriptspath = '#lib/indemic/ldscripts'
+        ldscriptspath = self._indemicRoot + '/lib/indemic/ldscripts'
 
         if architecture not in self.filepathByMicro:
             fpm = {}
@@ -253,10 +254,18 @@ class LinkerScriptBuilder:
         micro = micro.split('.') # ['at90usb162', 'x']
         micro = micro[0]
         # Prepare dummy.c file:
-        dummy = env.Textfile(target = '#_build/dummy.c', source = ['int main(void){}'])
-        tmpfile = File('#_build/' + architecture + '/' + micro + '-verbose.txt')
+        dummyFile = File('#/_build/dummy.c')
+        dummyPath = dummyFile.abspath
+        tmpfile = File('#/_build/' + architecture + '/' + micro + '-verbose.txt')
+        createDummyCommand = 'echo "int main(void){}" > ' + dummyPath
+        getLinkerScriptCmd = 'avr-gcc -Wl,--verbose -mmcu=' +  micro + ' ' + dummyPath + ' -o ' + dummyPath + '.out > ' + tmpfile.abspath
         # avr-gcc -Wl,--verbose -mmcu=MCU /tmp/dummy.c
-        getLinkerScriptCmd = 'avr-gcc -Wl,--verbose -mmcu=' +  micro + ' ' + dummy[0].abspath + ' -o ' + dummy[0].abspath + '.out > ' + tmpfile.abspath
+        if env.Execute(createDummyCommand):
+            SCons.Warnings.warn(
+                ToolIndeMicWarning,
+                "Failed to execute: '" + createDummyCommand + "'"
+            )
+            Exit(1)
         if env.Execute(getLinkerScriptCmd):
             SCons.Warnings.warn(
                 ToolIndeMicWarning,
@@ -315,7 +324,7 @@ class ElfPatcherBuilder:
     Gets interrupt addresses from special sections in elf,
     and places it to proper place in vector table
     """
-    def __init__(self, family, interruptLength):
+    def __init__(self, family, interruptLength, indemicRoot):
         self.env = Environment(
             BUILDERS = {
                 'PatchedElf': Builder(
@@ -331,7 +340,7 @@ class ElfPatcherBuilder:
         self._vectorTableSection = '.text'
         self._interruptsByMicro = {}
         self._filepathByMicro = None
-        self._interruptsPath = '#lib/indemic/interrupts'
+        self._interruptsPath = indemicRoot + '/lib/indemic/interrupts'
 
 
     def __call__(self, env, target, source):
@@ -486,8 +495,9 @@ class ElfPatcherBuilder:
 
 
 class BaseFamily:
-    def __init__(self):
+    def __init__(self, indemicRoot):
         self._envByMicro = {}
+        self._indemicRoot = indemicRoot
     def getName(self):
         raise NotImplementedError()
     def getEnv(self):
@@ -520,7 +530,7 @@ class BaseFamily:
         self._env = Environment(
             CC = toolchain_prefix + '-gcc',
             CXX = toolchain_prefix + '-g++',
-            CPPPATH = ['#/lib'],
+            CPPPATH = [self._indemicRoot + '/lib'],
             CXXFLAGS = '-std=c++11',
             CCFLAGS = '-g -Os -Wall',
             ENV = {'PATH' : os.environ['PATH']},
@@ -542,15 +552,9 @@ class AVRFamily(BaseFamily):
     """
     AVR family class
     """
-
-    linkerBuilder = LinkerScriptBuilder()
-
-    def __init__(self):
-        """
-        Append builders to environment
-        TODO: remove hardcoded path to indemic library
-        """
-        BaseFamily.__init__(self)
+    def __init__(self, indemicRoot):
+        BaseFamily.__init__(self, indemicRoot)
+        self.linkerBuilder = LinkerScriptBuilder(indemicRoot)
         self._initEnv('avr')
 
         conf = Configure(self._env)
@@ -560,7 +564,7 @@ class AVRFamily(BaseFamily):
         conf.Finish()
         # TODO: think about better solution...
         if self._env:
-            self.simavr = AVRFamilySimAVR()
+            self.simavr = AVRFamilySimAVR(indemicRoot)
 
     def getName(self):
         return 'avr'
@@ -599,9 +603,9 @@ class AVRFamily(BaseFamily):
         return env
 
 class AVRFamilySimAVR(AVRFamily):
-    def __init__(self):
-        # TODO: this is lame, think about soething normal
-        BaseFamily.__init__(self)
+    def __init__(self, indemicRoot):
+        # TODO: this is lame, think about something normal
+        BaseFamily.__init__(self, indemicRoot)
         self._builders = {}
         self._initEnv('avr')
         def CheckPKG(context, name):
@@ -624,11 +628,9 @@ class AVRFamilySimAVR(AVRFamily):
 
 libopencm3_root = '/opt/libopencm3'
 class STM32Family(BaseFamily):
-
-    elfPatcher = ElfPatcherBuilder('stm32', 4)
-
-    def __init__(self):
-        BaseFamily.__init__(self)
+    def __init__(self, indemicRoot):
+        BaseFamily.__init__(self, indemicRoot)
+        self.elfPatcher = ElfPatcherBuilder('stm32', 4, indemicRoot)
         self._initEnv('arm-none-eabi')
         self._env.Append(
             CPPPATH = [libopencm3_root + '/arm-none-eabi/include'],
@@ -650,7 +652,7 @@ class STM32Family(BaseFamily):
     def _createProgNode(self, menv, target, sources):
         # Adding suffix so that nobody tries to flash it
         # and indemic_flash won't find it this way
-        unpatched = menv.Program('unpatched-' + target[0] + '.tmp', sources)
+        unpatched = menv.Program(target[0] + '.tmp' + '-unpatched', sources)
         return self.elfPatcher.getNode(target, unpatched)
 
     def _initMicro(self, micro):
@@ -677,7 +679,7 @@ class STM32Family(BaseFamily):
             Exit(1)
 
         libs = ['opencm3_stm32f' + n]
-        ldscriptpath = '#lib/indemic/ldscripts/stm32/' + micro + '.ld -nostartfiles'
+        ldscriptpath = self._indemicRoot + '/lib/indemic/ldscripts/stm32/' + micro + '.ld -nostartfiles'
         ldflags = cflags + ' -T' + File(ldscriptpath).abspath
 
         env = self._env.Clone()
@@ -745,9 +747,18 @@ class IndemicBoardBuilder:
         return prog
 
 def generate(env, **kwargs):
+    """
+    Keyword arguments (all can be set via environment variables as well):
+    INDEMIC_ROOT    - path to indemic root
+    """
+
+    env.SetDefault(INDEMIC_ROOT  = '#')
+    apply(env.Replace, (), kwargs)
+    indemicRoot = env['INDEMIC_ROOT']
+
     d = {}
     builders = {}
-    families = [AVRFamily(), STM32Family()]
+    families = [AVRFamily(indemicRoot), STM32Family(indemicRoot)]
 
     for f in families:
         builders.update(f.getBuilders())
