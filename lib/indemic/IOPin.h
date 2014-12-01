@@ -88,6 +88,11 @@ class IOPin
         {
             P::setValue(value);
         }
+
+        using Value0 = typename P::Value0;
+        using Value1 = typename P::Value1;
+        using MakeInputValue = typename P::MakeInputValue;
+        using MakeOutputValue = typename P::MakeOutputValue;
 };
 
 }

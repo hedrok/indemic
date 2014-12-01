@@ -21,6 +21,7 @@
 #include <indemic/IOPin.h>
 #include <indemic/avr/AVRMic.h>
 #include <indemic/generic/RegisterBit.h>
+#include <indemic/generic/RegisterVisitor.h>
 
 namespace IndeMic
 {
@@ -48,7 +49,7 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void makeInput()
         {
-            Port::DDR::clear(_ddrBit);
+            RegisterVisitor::clear<DdrBit>();
         }
 
         /**
@@ -56,7 +57,7 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void makeOutput()
         {
-            Port::DDR::set(_ddrBit);
+            RegisterVisitor::set<DdrBit>();
         }
 
         /**
@@ -67,7 +68,7 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void setHigh()
         {
-            Port::PORT::set(_portBit);
+            RegisterVisitor::set<PortBit>();
         }
 
         /**
@@ -77,7 +78,7 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
          */
         static inline void setLow()
         {
-            Port::PORT::clear(_portBit);
+            RegisterVisitor::clear<PortBit>();
         }
 
         /**
@@ -93,10 +94,15 @@ class IOPin<avr::AVRMic<ns>, Port, pin>
                 setLow();
             }
         }
-    private:
-        constexpr static RegisterBit<typename Port::PORT, pin> _portBit = RegisterBit<typename Port::PORT, pin>();
-        constexpr static RegisterBit<typename Port::PIN, pin> _pinBit = RegisterBit<typename Port::PIN, pin>();
-        constexpr static RegisterBit<typename Port::DDR, pin> _ddrBit = RegisterBit<typename Port::DDR, pin>();
+
+        using PortBit = RegisterBit<typename Port::PORT, pin>;
+        using PinBit = RegisterBit<typename Port::PIN, pin>;
+        using DdrBit = RegisterBit<typename Port::DDR, pin>;
+
+        using Value0 = typename PortBit::template Value<0>;
+        using Value1 = typename PortBit::template Value<1>;
+        using MakeOutputValue = typename DdrBit::template Value<1>;
+        using MakeInputValue = typename DdrBit::template Value<0>;
 };
 
 }
